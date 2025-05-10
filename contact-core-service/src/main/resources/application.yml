@@ -2,14 +2,14 @@ spring:
   application:
     name: contact-core-service
   datasource:
-    url: ${DATABASE_URL}
+    url: jdbc:postgresql://db.rdczmzmusjfemlynaqdf.supabase.co:5432/postgres
     username: postgres
-    password: ${DB_PASSWORD}
+    password: Icecoldkilla@123
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: validate
-    show-sql: false
+    show-sql: true
     properties:
       hibernate:
         format_sql: true
@@ -54,5 +54,11 @@ logging:
   level:
     root: INFO
     com.salesflow: DEBUG
-    org.springframework.web: INFO
-    org.hibernate: INFO 
+    org.springframework.web: DEBUG
+    org.hibernate: DEBUG
+    org.springframework.security: DEBUG
+
+# Disable Eureka client
+eureka:
+  client:
+    enabled: false 

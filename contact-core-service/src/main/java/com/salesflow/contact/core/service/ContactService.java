@@ -26,4 +26,6 @@ public interface ContactService {
     long countContactsByStage(String ownerId, Contact.ContactStage stage);
     
     boolean existsByEmail(String email);
+    
+    List<ContactDTO> createBulkContacts(List<ContactDTO> contactDTOs, String ownerId);
 } 
