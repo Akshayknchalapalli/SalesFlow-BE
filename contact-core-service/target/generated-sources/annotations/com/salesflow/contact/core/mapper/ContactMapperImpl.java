@@ -14,8 +14,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-05-10T13:02:54+0530",
-    comments = "version: 1.5.5.Final, compiler: Eclipse JDT (IDE) 3.42.0.z20250331-1358, environment: Java 21.0.6 (Eclipse Adoptium)"
+    date = "2025-05-10T18:13:04+0530",
+    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 17.0.12 (Oracle Corporation)"
 )
 @Component
 public class ContactMapperImpl implements ContactMapper {
@@ -35,18 +35,18 @@ public class ContactMapperImpl implements ContactMapper {
 
         Contact.ContactBuilder<?, ?> contact = Contact.builder();
 
-        contact.addresses( addressDTOSetToAddressSet( dto.getAddresses() ) );
-        contact.companyName( dto.getCompanyName() );
-        contact.email( dto.getEmail() );
         contact.firstName( dto.getFirstName() );
-        contact.jobTitle( dto.getJobTitle() );
         contact.lastName( dto.getLastName() );
-        contact.notes( dto.getNotes() );
-        contact.ownerId( dto.getOwnerId() );
+        contact.email( dto.getEmail() );
         contact.phone( dto.getPhone() );
-        contact.preferences( contactPreferencesMapper.toEntity( dto.getPreferences() ) );
-        contact.socialProfiles( socialProfileDTOSetToSocialProfileSet( dto.getSocialProfiles() ) );
+        contact.companyName( dto.getCompanyName() );
+        contact.jobTitle( dto.getJobTitle() );
         contact.stage( dto.getStage() );
+        contact.ownerId( dto.getOwnerId() );
+        contact.preferences( contactPreferencesMapper.toEntity( dto.getPreferences() ) );
+        contact.addresses( addressDTOSetToAddressSet( dto.getAddresses() ) );
+        contact.socialProfiles( socialProfileDTOSetToSocialProfileSet( dto.getSocialProfiles() ) );
+        contact.notes( dto.getNotes() );
 
         return contact.build();
     }
@@ -59,22 +59,22 @@ public class ContactMapperImpl implements ContactMapper {
 
         ContactDTO contactDTO = new ContactDTO();
 
-        contactDTO.setAddresses( addressSetToAddressDTOSet( entity.getAddresses() ) );
-        contactDTO.setCompanyName( entity.getCompanyName() );
-        contactDTO.setCreatedAt( entity.getCreatedAt() );
-        contactDTO.setCreatedBy( entity.getCreatedBy() );
-        contactDTO.setEmail( entity.getEmail() );
-        contactDTO.setFirstName( entity.getFirstName() );
         contactDTO.setId( entity.getId() );
-        contactDTO.setJobTitle( entity.getJobTitle() );
+        contactDTO.setFirstName( entity.getFirstName() );
         contactDTO.setLastName( entity.getLastName() );
-        contactDTO.setNotes( entity.getNotes() );
-        contactDTO.setOwnerId( entity.getOwnerId() );
+        contactDTO.setEmail( entity.getEmail() );
         contactDTO.setPhone( entity.getPhone() );
-        contactDTO.setPreferences( contactPreferencesMapper.toDTO( entity.getPreferences() ) );
-        contactDTO.setSocialProfiles( socialProfileSetToSocialProfileDTOSet( entity.getSocialProfiles() ) );
+        contactDTO.setCompanyName( entity.getCompanyName() );
+        contactDTO.setJobTitle( entity.getJobTitle() );
         contactDTO.setStage( entity.getStage() );
+        contactDTO.setOwnerId( entity.getOwnerId() );
+        contactDTO.setPreferences( contactPreferencesMapper.toDTO( entity.getPreferences() ) );
+        contactDTO.setAddresses( addressSetToAddressDTOSet( entity.getAddresses() ) );
+        contactDTO.setSocialProfiles( socialProfileSetToSocialProfileDTOSet( entity.getSocialProfiles() ) );
+        contactDTO.setNotes( entity.getNotes() );
+        contactDTO.setCreatedAt( entity.getCreatedAt() );
         contactDTO.setUpdatedAt( entity.getUpdatedAt() );
+        contactDTO.setCreatedBy( entity.getCreatedBy() );
         contactDTO.setUpdatedBy( entity.getUpdatedBy() );
         contactDTO.setVersion( entity.getVersion() );
 
@@ -87,6 +87,33 @@ public class ContactMapperImpl implements ContactMapper {
             return;
         }
 
+        if ( dto.getFirstName() != null ) {
+            entity.setFirstName( dto.getFirstName() );
+        }
+        if ( dto.getLastName() != null ) {
+            entity.setLastName( dto.getLastName() );
+        }
+        if ( dto.getEmail() != null ) {
+            entity.setEmail( dto.getEmail() );
+        }
+        if ( dto.getPhone() != null ) {
+            entity.setPhone( dto.getPhone() );
+        }
+        if ( dto.getCompanyName() != null ) {
+            entity.setCompanyName( dto.getCompanyName() );
+        }
+        if ( dto.getJobTitle() != null ) {
+            entity.setJobTitle( dto.getJobTitle() );
+        }
+        if ( dto.getStage() != null ) {
+            entity.setStage( dto.getStage() );
+        }
+        if ( dto.getOwnerId() != null ) {
+            entity.setOwnerId( dto.getOwnerId() );
+        }
+        if ( dto.getPreferences() != null ) {
+            entity.setPreferences( contactPreferencesMapper.toEntity( dto.getPreferences() ) );
+        }
         if ( entity.getAddresses() != null ) {
             Set<Address> set = addressDTOSetToAddressSet( dto.getAddresses() );
             if ( set != null ) {
@@ -99,33 +126,6 @@ public class ContactMapperImpl implements ContactMapper {
             if ( set != null ) {
                 entity.setAddresses( set );
             }
-        }
-        if ( dto.getCompanyName() != null ) {
-            entity.setCompanyName( dto.getCompanyName() );
-        }
-        if ( dto.getEmail() != null ) {
-            entity.setEmail( dto.getEmail() );
-        }
-        if ( dto.getFirstName() != null ) {
-            entity.setFirstName( dto.getFirstName() );
-        }
-        if ( dto.getJobTitle() != null ) {
-            entity.setJobTitle( dto.getJobTitle() );
-        }
-        if ( dto.getLastName() != null ) {
-            entity.setLastName( dto.getLastName() );
-        }
-        if ( dto.getNotes() != null ) {
-            entity.setNotes( dto.getNotes() );
-        }
-        if ( dto.getOwnerId() != null ) {
-            entity.setOwnerId( dto.getOwnerId() );
-        }
-        if ( dto.getPhone() != null ) {
-            entity.setPhone( dto.getPhone() );
-        }
-        if ( dto.getPreferences() != null ) {
-            entity.setPreferences( contactPreferencesMapper.toEntity( dto.getPreferences() ) );
         }
         if ( entity.getSocialProfiles() != null ) {
             Set<SocialProfile> set1 = socialProfileDTOSetToSocialProfileSet( dto.getSocialProfiles() );
@@ -140,8 +140,8 @@ public class ContactMapperImpl implements ContactMapper {
                 entity.setSocialProfiles( set1 );
             }
         }
-        if ( dto.getStage() != null ) {
-            entity.setStage( dto.getStage() );
+        if ( dto.getNotes() != null ) {
+            entity.setNotes( dto.getNotes() );
         }
     }
 

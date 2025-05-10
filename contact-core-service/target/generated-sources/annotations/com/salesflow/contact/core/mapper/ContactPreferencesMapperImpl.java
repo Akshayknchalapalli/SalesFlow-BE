@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-05-10T13:02:54+0530",
-    comments = "version: 1.5.5.Final, compiler: Eclipse JDT (IDE) 3.42.0.z20250331-1358, environment: Java 21.0.6 (Eclipse Adoptium)"
+    date = "2025-05-10T18:13:04+0530",
+    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 17.0.12 (Oracle Corporation)"
 )
 @Component
 public class ContactPreferencesMapperImpl implements ContactPreferencesMapper {
@@ -21,11 +21,11 @@ public class ContactPreferencesMapperImpl implements ContactPreferencesMapper {
 
         ContactPreferences contactPreferences = new ContactPreferences();
 
-        contactPreferences.setCommunicationLanguage( dto.getCommunicationLanguage() );
-        contactPreferences.setDoNotContact( dto.isDoNotContact() );
-        contactPreferences.setMarketingOptIn( dto.isMarketingOptIn() );
         contactPreferences.setPreferredContactMethod( dto.getPreferredContactMethod() );
         contactPreferences.setPreferredContactTime( dto.getPreferredContactTime() );
+        contactPreferences.setDoNotContact( dto.isDoNotContact() );
+        contactPreferences.setMarketingOptIn( dto.isMarketingOptIn() );
+        contactPreferences.setCommunicationLanguage( dto.getCommunicationLanguage() );
 
         return contactPreferences;
     }
@@ -38,11 +38,11 @@ public class ContactPreferencesMapperImpl implements ContactPreferencesMapper {
 
         ContactPreferencesDTO contactPreferencesDTO = new ContactPreferencesDTO();
 
-        contactPreferencesDTO.setCommunicationLanguage( entity.getCommunicationLanguage() );
-        contactPreferencesDTO.setDoNotContact( entity.isDoNotContact() );
-        contactPreferencesDTO.setMarketingOptIn( entity.isMarketingOptIn() );
         contactPreferencesDTO.setPreferredContactMethod( entity.getPreferredContactMethod() );
         contactPreferencesDTO.setPreferredContactTime( entity.getPreferredContactTime() );
+        contactPreferencesDTO.setDoNotContact( entity.isDoNotContact() );
+        contactPreferencesDTO.setMarketingOptIn( entity.isMarketingOptIn() );
+        contactPreferencesDTO.setCommunicationLanguage( entity.getCommunicationLanguage() );
 
         return contactPreferencesDTO;
     }

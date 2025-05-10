@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-05-10T13:02:54+0530",
-    comments = "version: 1.5.5.Final, compiler: Eclipse JDT (IDE) 3.42.0.z20250331-1358, environment: Java 21.0.6 (Eclipse Adoptium)"
+    date = "2025-05-10T18:13:04+0530",
+    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 17.0.12 (Oracle Corporation)"
 )
 @Component
 public class AddressMapperImpl implements AddressMapper {
@@ -21,13 +21,13 @@ public class AddressMapperImpl implements AddressMapper {
 
         Address address = new Address();
 
-        address.setCity( dto.getCity() );
-        address.setCountry( dto.getCountry() );
-        address.setPostalCode( dto.getPostalCode() );
-        address.setPrimary( dto.isPrimary() );
-        address.setState( dto.getState() );
-        address.setStreet( dto.getStreet() );
         address.setType( dto.getType() );
+        address.setStreet( dto.getStreet() );
+        address.setCity( dto.getCity() );
+        address.setState( dto.getState() );
+        address.setPostalCode( dto.getPostalCode() );
+        address.setCountry( dto.getCountry() );
+        address.setPrimary( dto.isPrimary() );
 
         return address;
     }
@@ -40,13 +40,13 @@ public class AddressMapperImpl implements AddressMapper {
 
         AddressDTO addressDTO = new AddressDTO();
 
-        addressDTO.setCity( entity.getCity() );
-        addressDTO.setCountry( entity.getCountry() );
-        addressDTO.setPostalCode( entity.getPostalCode() );
-        addressDTO.setPrimary( entity.isPrimary() );
-        addressDTO.setState( entity.getState() );
-        addressDTO.setStreet( entity.getStreet() );
         addressDTO.setType( entity.getType() );
+        addressDTO.setStreet( entity.getStreet() );
+        addressDTO.setCity( entity.getCity() );
+        addressDTO.setState( entity.getState() );
+        addressDTO.setPostalCode( entity.getPostalCode() );
+        addressDTO.setCountry( entity.getCountry() );
+        addressDTO.setPrimary( entity.isPrimary() );
 
         return addressDTO;
     }
