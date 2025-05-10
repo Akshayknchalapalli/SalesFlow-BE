@@ -31,6 +31,8 @@ public class ContactServiceImpl implements ContactService {
 
         Contact contact = contactMapper.toEntity(contactDTO);
         contact.setOwnerId(ownerId);
+        contact.setCreatedBy(ownerId);
+        contact.setUpdatedBy(ownerId);
         contact = contactRepository.save(contact);
         return contactMapper.toDTO(contact);
     }
@@ -113,5 +115,24 @@ public class ContactServiceImpl implements ContactService {
     @Transactional(readOnly = true)
     public boolean existsByEmail(String email) {
         return contactRepository.findByEmail(email).isPresent();
+    }
+
+    @Override
+    @Transactional
+    public List<ContactDTO> createBulkContacts(List<ContactDTO> contactDTOs, String ownerId) {
+        List<Contact> contacts = contactDTOs.stream()
+            .map(contactDTO -> {
+                Contact contact = contactMapper.toEntity(contactDTO);
+                contact.setOwnerId(ownerId);
+                contact.setCreatedBy(ownerId);
+                contact.setUpdatedBy(ownerId);
+                return contact;
+            })
+            .toList();
+
+        List<Contact> savedContacts = contactRepository.saveAll(contacts);
+        return savedContacts.stream()
+            .map(contactMapper::toDTO)
+            .toList();
     }
 } 
