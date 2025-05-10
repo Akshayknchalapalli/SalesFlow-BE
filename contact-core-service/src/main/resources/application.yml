@@ -2,9 +2,9 @@ spring:
   application:
     name: contact-core-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/salesflow_contacts
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
+    url: ${DATABASE_URL}
+    username: postgres
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -23,7 +23,7 @@ spring:
     port: 6379
   cloud:
     config:
-      enabled: true
+      enabled: false
       uri: http://localhost:8888
     discovery:
       enabled: true
