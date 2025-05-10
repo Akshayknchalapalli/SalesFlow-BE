@@ -21,3 +21,7 @@ app.log
 # OS specific files
 .DS_Store
 Thumbs.db
+
+env
+.env
+contact-core-service/.env
