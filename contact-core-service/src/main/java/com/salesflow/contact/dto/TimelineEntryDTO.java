@@ -13,7 +13,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TimelineEntryDTO {
-    private Long id;
+    private UUID id;
     private UUID contactId;
     private String title;
     private String description;

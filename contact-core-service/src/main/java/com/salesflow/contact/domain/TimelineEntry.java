@@ -1,24 +1,28 @@
 package com.salesflow.contact.domain;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.Builder;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import org.hibernate.annotations.GenericGenerator;
+
+import java.util.UUID;
 
 @Entity
 @Table(name = "timeline_entries")
-@Getter
-@Setter
-@Builder
+@Data
+@EqualsAndHashCode(callSuper = true)
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 public class TimelineEntry extends BaseEntity {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(name = "id", updatable = false, nullable = false)
+    private UUID id;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "contact_id", nullable = false)
@@ -33,12 +37,6 @@ public class TimelineEntry extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private EntryType type;
-    
-    @Column(name = "created_by", nullable = false)
-    private String createdBy;
-    
-    @Column(name = "updated_by", nullable = false)
-    private String updatedBy;
     
     @Version
     private Long version;

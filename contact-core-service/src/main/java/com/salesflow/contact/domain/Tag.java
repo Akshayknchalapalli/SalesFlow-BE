@@ -3,7 +3,7 @@ package com.salesflow.contact.domain;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.Builder;
+import lombok.experimental.SuperBuilder;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.util.UUID;
@@ -13,7 +13,7 @@ import org.hibernate.annotations.GenericGenerator;
 @Table(name = "Tags")
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Tag extends BaseEntity {

@@ -2,12 +2,18 @@ package com.salesflow.contact.dto;
 
 import com.salesflow.contact.domain.Contact;
 import lombok.Data;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ContactDTO {
     private UUID id;
     private String firstName;
@@ -18,6 +24,8 @@ public class ContactDTO {
     private String jobTitle;
     private Contact.ContactStage stage;
     private String ownerId;
+    private String teamId;
+    private String regionId;
     private ContactPreferencesDTO preferences;
     private Set<AddressDTO> addresses;
     private Set<SocialProfileDTO> socialProfiles;

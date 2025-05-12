@@ -1,9 +1,8 @@
 package com.salesflow.contact.domain;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.Builder;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
@@ -14,9 +13,9 @@ import org.hibernate.annotations.GenericGenerator;
 
 @Entity
 @Table(name = "contacts")
-@Getter
-@Setter
-@Builder
+@Data
+@EqualsAndHashCode(callSuper = true)
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Contact extends BaseEntity {
@@ -62,13 +61,17 @@ public class Contact extends BaseEntity {
 
     @ElementCollection
     @CollectionTable(name = "contact_addresses", joinColumns = @JoinColumn(name = "contact_id"))
-    @Builder.Default
     private Set<Address> addresses = new HashSet<>();
 
     @ElementCollection
     @CollectionTable(name = "contact_social_profiles", joinColumns = @JoinColumn(name = "contact_id"))
-    @Builder.Default
     private Set<SocialProfile> socialProfiles = new HashSet<>();
+
+    @OneToMany(mappedBy = "contact", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<TimelineEntry> timelineEntries = new HashSet<>();
+
+    @OneToMany(mappedBy = "contact", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Note> notes = new HashSet<>();
 
     @ManyToMany
     @JoinTable(
@@ -76,16 +79,15 @@ public class Contact extends BaseEntity {
         joinColumns = @JoinColumn(name = "contact_id"),
         inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
-    @Builder.Default
     private Set<Tag> tags = new HashSet<>();
 
-    @OneToMany(mappedBy = "contact", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private Set<TimelineEntry> timelineEntries = new HashSet<>();
-
-    @OneToMany(mappedBy = "contact", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private Set<Note> notes = new HashSet<>();
+    @ManyToMany
+    @JoinTable(
+        name = "contact_related_contacts",
+        joinColumns = @JoinColumn(name = "contact_id"),
+        inverseJoinColumns = @JoinColumn(name = "related_contact_id")
+    )
+    private Set<Contact> relatedContacts = new HashSet<>();
 
     @Version
     private Long version;
@@ -96,6 +98,14 @@ public class Contact extends BaseEntity {
         CUSTOMER,
         INACTIVE,
         PARTNER
+    }
+
+    public enum ContactMethod {
+        EMAIL, PHONE, SMS, MAIL
+    }
+
+    public enum ContactTime {
+        MORNING, AFTERNOON, EVENING, ANYTIME
     }
 
     public void addTimelineEntry(TimelineEntry entry) {
@@ -125,6 +135,12 @@ public class Contact extends BaseEntity {
         notes.remove(note);
         note.setContact(null);
     }
-    
-    
+
+    public void addRelatedContact(Contact contact) {
+        relatedContacts.add(contact);
+    }
+
+    public void removeRelatedContact(Contact contact) {
+        relatedContacts.remove(contact);
+    }
 } 

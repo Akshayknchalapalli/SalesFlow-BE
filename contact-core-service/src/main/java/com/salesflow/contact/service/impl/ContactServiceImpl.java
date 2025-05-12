@@ -16,6 +16,7 @@ import com.salesflow.contact.mapper.TagMapper;
 import com.salesflow.contact.repository.ContactRepository;
 import com.salesflow.contact.repository.TagRepository;
 import com.salesflow.contact.service.ContactService;
+import com.salesflow.contact.service.NoteService;
 import com.salesflow.contact.service.TimelineService;
 
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,7 +38,7 @@ public class ContactServiceImpl implements ContactService {
     private final TimelineService timelineService;
     private final TagRepository tagRepository;
     private final TagMapper tagMapper;
-    private final NoteMapper noteMapper;
+    private final NoteService noteService;
 
     @Override
     @Transactional
@@ -49,6 +51,28 @@ public class ContactServiceImpl implements ContactService {
         contact.setOwnerId(ownerId);
         contact.setCreatedBy(ownerId);
         contact.setUpdatedBy(ownerId);
+
+        // Set audit fields for addresses
+        if (contact.getAddresses() != null) {
+            contact.getAddresses().forEach(address -> {
+                address.setCreatedBy(ownerId);
+                address.setUpdatedBy(ownerId);
+                address.setCreatedAt(Instant.now());
+                address.setUpdatedAt(Instant.now());
+            });
+        }
+
+        // Set audit fields for social profiles
+        if (contact.getSocialProfiles() != null) {
+            contact.getSocialProfiles().forEach(profile -> {
+                profile.setCreatedBy(ownerId);
+                profile.setUpdatedBy(ownerId);
+                profile.setCreatedAt(Instant.now());
+                profile.setUpdatedAt(Instant.now());
+                profile.setVersion(0L);
+            });
+        }
+
         contact = contactRepository.save(contact);
 
         // Create a timeline entry for the contact
@@ -219,10 +243,12 @@ public class ContactServiceImpl implements ContactService {
             throw new ContactNotFoundException("Contact not found with id: " + contactId);
         }
 
-        Note note = new Note(noteContent, ownerId);
-        note.setContact(contact);
-        contact.addNote(note);
-        contactRepository.save(contact);
+        NoteDTO noteDTO = NoteDTO.builder()
+                .content(noteContent)
+                .contactId(contactId)
+                .build();
+
+        noteService.createNote(noteDTO, ownerId);
     }
 
     @Override
@@ -235,13 +261,7 @@ public class ContactServiceImpl implements ContactService {
             throw new ContactNotFoundException("Contact not found with id: " + contactId);
         }
 
-        Note note = contact.getNotes().stream()
-                .filter(n -> n.getId().equals(noteId))
-                .findFirst()
-                .orElseThrow(() -> new NoteNotFoundException("Note not found with id: " + noteId));
-
-        contact.removeNote(note);
-        contactRepository.save(contact);
+        noteService.deleteNote(noteId, ownerId);
     }
 
     @Override
@@ -254,9 +274,7 @@ public class ContactServiceImpl implements ContactService {
             throw new ContactNotFoundException("Contact not found with id: " + contactId);
         }
 
-        return contact.getNotes().stream()
-                .map(noteMapper::toDTO)
-                .toList();
+        return noteService.getContactNotes(contactId, ownerId);
     }
 
     @Override

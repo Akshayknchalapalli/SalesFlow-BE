@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface TimelineEntryRepository extends JpaRepository<TimelineEntry, Long> {
+public interface TimelineEntryRepository extends JpaRepository<TimelineEntry, UUID> {
     
     Page<TimelineEntry> findByContactId(UUID contactId, Pageable pageable);
     
