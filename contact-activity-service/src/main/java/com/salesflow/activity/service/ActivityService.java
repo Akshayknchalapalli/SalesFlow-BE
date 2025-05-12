@@ -1,6 +1,7 @@
 package com.salesflow.activity.service;
 
 import com.salesflow.activity.dto.ActivityDTO;
+import com.salesflow.activity.dto.TimelineDTO;
 import com.salesflow.activity.model.Activity;
 import com.salesflow.activity.model.ActivityType;
 import com.salesflow.activity.repository.ActivityRepository;
@@ -75,6 +76,55 @@ public class ActivityService {
         return convertToDTO(updatedActivity);
     }
 
+    @Transactional(readOnly = true)
+    public List<TimelineDTO> getContactTimeline(Long contactId, LocalDateTime startDate, LocalDateTime endDate) {
+        List<Activity> activities = activityRepository.findByContactId(contactId);
+        
+        return activities.stream()
+                .filter(activity -> {
+                    if (startDate != null && activity.getScheduledAt().isBefore(startDate)) {
+                        return false;
+                    }
+                    if (endDate != null && activity.getScheduledAt().isAfter(endDate)) {
+                        return false;
+                    }
+                    return true;
+                })
+                .map(this::convertToTimelineDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<ActivityDTO> searchActivities(String query, ActivityType type, String assignedTo, 
+                                            LocalDateTime startDate, LocalDateTime endDate) {
+        List<Activity> activities = activityRepository.findAll();
+        
+        return activities.stream()
+                .filter(activity -> {
+                    if (query != null && !query.isEmpty()) {
+                        if (!activity.getNotes().toLowerCase().contains(query.toLowerCase()) &&
+                            !activity.getOutcome().toLowerCase().contains(query.toLowerCase())) {
+                            return false;
+                        }
+                    }
+                    if (type != null && activity.getType() != type) {
+                        return false;
+                    }
+                    if (assignedTo != null && !assignedTo.equals(activity.getAssignedTo())) {
+                        return false;
+                    }
+                    if (startDate != null && activity.getScheduledAt().isBefore(startDate)) {
+                        return false;
+                    }
+                    if (endDate != null && activity.getScheduledAt().isAfter(endDate)) {
+                        return false;
+                    }
+                    return true;
+                })
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
     private Activity convertToEntity(ActivityDTO dto) {
         Activity activity = new Activity();
         activity.setContactId(dto.getContactId());
@@ -101,6 +151,21 @@ public class ActivityService {
         dto.setNextStep(activity.getNextStep());
         dto.setCreatedAt(activity.getCreatedAt());
         dto.setUpdatedAt(activity.getUpdatedAt());
+        return dto;
+    }
+
+    private TimelineDTO convertToTimelineDTO(Activity activity) {
+        TimelineDTO dto = new TimelineDTO();
+        dto.setId(activity.getId());
+        dto.setContactId(activity.getContactId());
+        dto.setType(activity.getType());
+        dto.setOutcome(activity.getOutcome());
+        dto.setNotes(activity.getNotes());
+        dto.setTimestamp(activity.getScheduledAt());
+        dto.setAssignedTo(activity.getAssignedTo());
+        dto.setNextStep(activity.getNextStep());
+        dto.setCompleted(activity.getCompletedAt() != null);
+        dto.setCompletedAt(activity.getCompletedAt());
         return dto;
     }
 

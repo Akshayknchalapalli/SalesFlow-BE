@@ -1,32 +1,93 @@
-server:
-  port: 8082
-
 spring:
   application:
     name: contact-activity-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/salesflow_activity
+    url: jdbc:postgresql://db.rdczmzmusjfemlynaqdf.supabase.co:5432/postgres
     username: postgres
-    password: postgres
+    password: Icecoldkilla@123
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+  redis:
+    host: localhost
+    port: 6379
+  cloud:
+    config:
+      enabled: false
+      uri: http://localhost:8888
+    discovery:
+      enabled: true
+      service-id: ${spring.application.name}
 
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: http://localhost:8761/eureka/
-  instance:
-    prefer-ip-address: true
+# Contact Core Service Integration
+contact:
+  core:
+    service:
+      url: http://contact-core-service/api/v1
+      timeout: 5000
+      retry:
+        max-attempts: 3
+        initial-interval: 1000
+        multiplier: 2
+        max-interval: 5000
+      circuit-breaker:
+        enabled: true
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 5000
+        permitted-number-of-calls-in-half-open-state: 2
+        sliding-window-size: 10
+
+server:
+  port: 8082
+  servlet:
+    context-path: /api
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: always
+      group:
+        readiness:
+          include: db,redis,contact-core-service
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
 
 logging:
   level:
-    com.salesflow.activity: DEBUG
-    org.springframework.web: INFO
-    org.hibernate: INFO 
+    root: INFO
+    com.salesflow: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate: DEBUG
+    org.springframework.security: DEBUG
+    com.salesflow.activity.client.ContactCoreClient: DEBUG
+
+# Eureka Client Configuration
+eureka:
+  client:
+    enabled: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${random.value} 
