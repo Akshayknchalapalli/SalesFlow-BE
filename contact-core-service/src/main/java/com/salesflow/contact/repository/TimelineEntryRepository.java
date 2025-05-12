@@ -9,25 +9,26 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 public interface TimelineEntryRepository extends JpaRepository<TimelineEntry, Long> {
     
-    Page<TimelineEntry> findByContactId(Long contactId, Pageable pageable);
+    Page<TimelineEntry> findByContactId(UUID contactId, Pageable pageable);
     
-    List<TimelineEntry> findByContactIdOrderByCreatedAtDesc(Long contactId);
+    List<TimelineEntry> findByContactIdOrderByCreatedAtDesc(UUID contactId);
     
-    @Query("SELECT te FROM TimelineEntry te WHERE te.contactId = :contactId AND " +
+    @Query("SELECT te FROM TimelineEntry te WHERE te.contact.id = :contactId AND " +
            "te.type = :type ORDER BY te.createdAt DESC")
     List<TimelineEntry> findByContactIdAndTypeOrderByCreatedAtDesc(
-        @Param("contactId") Long contactId,
+        @Param("contactId") UUID contactId,
         @Param("type") TimelineEntry.EntryType type
     );
     
-    @Query("SELECT COUNT(te) FROM TimelineEntry te WHERE te.contactId = :contactId AND " +
+    @Query("SELECT COUNT(te) FROM TimelineEntry te WHERE te.contact.id = :contactId AND " +
            "te.type = :type")
     long countByContactIdAndType(
-        @Param("contactId") Long contactId,
+        @Param("contactId") UUID contactId,
         @Param("type") TimelineEntry.EntryType type
     );
 } 

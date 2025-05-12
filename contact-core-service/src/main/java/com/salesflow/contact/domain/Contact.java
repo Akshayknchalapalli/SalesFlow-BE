@@ -9,6 +9,8 @@ import lombok.AllArgsConstructor;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
+import org.hibernate.annotations.GenericGenerator;
 
 @Entity
 @Table(name = "contacts")
@@ -20,8 +22,10 @@ import java.util.Set;
 public class Contact extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(name = "id", updatable = false, nullable = false)
+    private UUID id;
 
     @Column(nullable = false)
     private String firstName;

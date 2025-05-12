@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -43,7 +44,7 @@ public class TagServiceImpl implements TagService {
 
     @Override
     @Transactional
-    public TagDTO updateTag(Long id, TagDTO tagDTO, String ownerId) {
+    public TagDTO updateTag(UUID id, TagDTO tagDTO, String ownerId) {
         Tag tag = tagRepository.findById(id)
                 .orElseThrow(() -> new TagNotFoundException("Tag not found with id: " + id));
 
@@ -62,7 +63,7 @@ public class TagServiceImpl implements TagService {
 
     @Override
     @Transactional
-    public void deleteTag(Long id, String ownerId) {
+    public void deleteTag(UUID id, String ownerId) {
         Tag tag = tagRepository.findById(id)
                 .orElseThrow(() -> new TagNotFoundException("Tag not found with id: " + id));
 
@@ -75,7 +76,7 @@ public class TagServiceImpl implements TagService {
 
     @Override
     @Transactional(readOnly = true)
-    public TagDTO getTag(Long id, String ownerId) {
+    public TagDTO getTag(UUID id, String ownerId) {
         Tag tag = tagRepository.findById(id)
                 .orElseThrow(() -> new TagNotFoundException("Tag not found with id: " + id));
 
@@ -111,7 +112,7 @@ public class TagServiceImpl implements TagService {
 
     @Override
     @Transactional
-    public void addTagToContact(Long contactId, Long tagId, String ownerId) {
+    public void addTagToContact(UUID contactId, UUID tagId, String ownerId) {
         Contact contact = contactRepository.findById(contactId)
                 .orElseThrow(() -> new ContactNotFoundException("Contact not found with id: " + contactId));
 
@@ -132,7 +133,7 @@ public class TagServiceImpl implements TagService {
 
     @Override
     @Transactional
-    public void removeTagFromContact(Long contactId, Long tagId, String ownerId) {
+    public void removeTagFromContact(UUID contactId, UUID tagId, String ownerId) {
         Contact contact = contactRepository.findById(contactId)
                 .orElseThrow(() -> new ContactNotFoundException("Contact not found with id: " + contactId));
 
@@ -153,7 +154,7 @@ public class TagServiceImpl implements TagService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<TagDTO> getContactTags(Long contactId, String ownerId) {
+    public List<TagDTO> getContactTags(UUID contactId, String ownerId) {
         Contact contact = contactRepository.findById(contactId)
                 .orElseThrow(() -> new ContactNotFoundException("Contact not found with id: " + contactId));
 

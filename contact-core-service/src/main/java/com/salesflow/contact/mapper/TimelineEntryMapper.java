@@ -14,11 +14,14 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 public interface TimelineEntryMapper {
     
     @Mapping(target = "contactId", source = "contact.id")
+    @Mapping(target = "type", source = "type")
     TimelineEntryDTO toDTO(TimelineEntry entity);
     
     @Mapping(target = "contact", ignore = true)
+    @Mapping(target = "type", source = "type")
     TimelineEntry toEntity(TimelineEntryDTO dto);
     
     @Mapping(target = "contact", ignore = true)
+    @Mapping(target = "type", source = "type")
     void updateEntityFromDTO(TimelineEntryDTO dto, @MappingTarget TimelineEntry entity);
 } 

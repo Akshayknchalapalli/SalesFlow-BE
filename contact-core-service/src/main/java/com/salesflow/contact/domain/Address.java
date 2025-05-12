@@ -10,7 +10,6 @@ import jakarta.persistence.Column;
 @Setter
 public class Address {
     
-    @Column(name = "address_type")
     private String type; // e.g., HOME, WORK, BILLING
     
     private String street;

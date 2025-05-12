@@ -2,12 +2,19 @@ package com.salesflow.contact.dto;
 
 import com.salesflow.contact.domain.TimelineEntry;
 import lombok.Data;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import java.time.Instant;
+import java.util.UUID;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class TimelineEntryDTO {
     private Long id;
-    private Long contactId;
+    private UUID contactId;
     private String title;
     private String description;
     private TimelineEntry.EntryType type;

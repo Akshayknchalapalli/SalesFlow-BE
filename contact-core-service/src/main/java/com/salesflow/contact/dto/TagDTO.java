@@ -2,10 +2,11 @@ package com.salesflow.contact.dto;
 
 import lombok.Data;
 import java.time.Instant;
+import java.util.UUID;
 
 @Data
 public class TagDTO {
-    private Long id;
+    private UUID id;
     private String name;
     private String description;
     private String colorHex;

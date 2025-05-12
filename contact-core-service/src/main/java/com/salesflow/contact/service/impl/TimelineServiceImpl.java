@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -40,14 +41,14 @@ public class TimelineServiceImpl implements TimelineService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<TimelineEntryDTO> getContactTimeline(Long contactId, Pageable pageable) {
+    public Page<TimelineEntryDTO> getContactTimeline(UUID contactId, Pageable pageable) {
         return timelineEntryRepository.findByContactId(contactId, pageable)
                 .map(timelineEntryMapper::toDTO);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<TimelineEntryDTO> getContactTimelineByType(Long contactId, TimelineEntry.EntryType type) {
+    public List<TimelineEntryDTO> getContactTimelineByType(UUID contactId, TimelineEntry.EntryType type) {
         return timelineEntryRepository.findByContactIdAndTypeOrderByCreatedAtDesc(contactId, type)
                 .stream()
                 .map(timelineEntryMapper::toDTO)
@@ -56,13 +57,13 @@ public class TimelineServiceImpl implements TimelineService {
 
     @Override
     @Transactional(readOnly = true)
-    public long countContactTimelineEntriesByType(Long contactId, TimelineEntry.EntryType type) {
+    public long countContactTimelineEntriesByType(UUID contactId, TimelineEntry.EntryType type) {
         return timelineEntryRepository.countByContactIdAndType(contactId, type);
     }
 
     @Override
     @Transactional
-    public void createContactCreatedEntry(Long contactId, String userId) {
+    public void createContactCreatedEntry(UUID contactId, String userId) {
         Contact contact = contactRepository.findById(contactId)
                 .orElseThrow(() -> new ContactNotFoundException("Contact not found with id: " + contactId));
 
@@ -80,7 +81,7 @@ public class TimelineServiceImpl implements TimelineService {
 
     @Override
     @Transactional
-    public void createStageChangedEntry(Long contactId, String oldStage, String newStage, String userId) {
+    public void createStageChangedEntry(UUID contactId, String oldStage, String newStage, String userId) {
         Contact contact = contactRepository.findById(contactId)
                 .orElseThrow(() -> new ContactNotFoundException("Contact not found with id: " + contactId));
 
@@ -98,7 +99,7 @@ public class TimelineServiceImpl implements TimelineService {
 
     @Override
     @Transactional
-    public void createActivityLoggedEntry(Long contactId, String activityType, String description, String userId) {
+    public void createActivityLoggedEntry(UUID contactId, String activityType, String description, String userId) {
         Contact contact = contactRepository.findById(contactId)
                 .orElseThrow(() -> new ContactNotFoundException("Contact not found with id: " + contactId));
 
@@ -116,7 +117,7 @@ public class TimelineServiceImpl implements TimelineService {
 
     @Override
     @Transactional
-    public void createNoteAddedEntry(Long contactId, String note, String userId) {
+    public void createNoteAddedEntry(UUID contactId, String note, String userId) {
         Contact contact = contactRepository.findById(contactId)
                 .orElseThrow(() -> new ContactNotFoundException("Contact not found with id: " + contactId));
 
@@ -134,7 +135,7 @@ public class TimelineServiceImpl implements TimelineService {
 
     @Override
     @Transactional
-    public void createTagAddedEntry(Long contactId, String tagName, String userId) {
+    public void createTagAddedEntry(UUID contactId, String tagName, String userId) {
         Contact contact = contactRepository.findById(contactId)
                 .orElseThrow(() -> new ContactNotFoundException("Contact not found with id: " + contactId));
 
@@ -152,7 +153,7 @@ public class TimelineServiceImpl implements TimelineService {
 
     @Override
     @Transactional
-    public void createTagRemovedEntry(Long contactId, String tagName, String userId) {
+    public void createTagRemovedEntry(UUID contactId, String tagName, String userId) {
         Contact contact = contactRepository.findById(contactId)
                 .orElseThrow(() -> new ContactNotFoundException("Contact not found with id: " + contactId));
 
@@ -170,7 +171,7 @@ public class TimelineServiceImpl implements TimelineService {
 
     @Override
     @Transactional
-    public void createOwnershipChangedEntry(Long contactId, String oldOwner, String newOwner, String userId) {
+    public void createOwnershipChangedEntry(UUID contactId, String oldOwner, String newOwner, String userId) {
         Contact contact = contactRepository.findById(contactId)
                 .orElseThrow(() -> new ContactNotFoundException("Contact not found with id: " + contactId));
 

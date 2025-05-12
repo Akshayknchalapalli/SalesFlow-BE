@@ -8,16 +8,17 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface ContactService {
     
     ContactDTO createContact(ContactDTO contactDTO, String ownerId);
     
-    ContactDTO updateContact(Long id, ContactDTO contactDTO, String ownerId);
+    ContactDTO updateContact(UUID id, ContactDTO contactDTO, String ownerId);
     
-    void deleteContact(Long id, String ownerId);
+    void deleteContact(UUID id, String ownerId);
     
-    ContactDTO getContact(Long id, String ownerId);
+    ContactDTO getContact(UUID id, String ownerId);
     
     Page<ContactDTO> getContacts(String ownerId, Pageable pageable);
     
@@ -29,17 +30,19 @@ public interface ContactService {
     
     boolean existsByEmail(String email);
     
+    boolean existsByEmailAndIdNot(String email, UUID id);
+    
     List<ContactDTO> createBulkContacts(List<ContactDTO> contactDTOs, String ownerId);
 
-    void addTagToContact(Long contactId, Long tagId, String ownerId);
+    void addTagToContact(UUID contactId, UUID tagId, String ownerId);
 
-    void removeTagFromContact(Long contactId, Long tagId, String ownerId);
+    void removeTagFromContact(UUID contactId, UUID tagId, String ownerId);
 
-    List<TagDTO> getContactTags(Long contactId, String ownerId);
+    List<TagDTO> getContactTags(UUID contactId, String ownerId);
 
-    void addNoteToContact(Long contactId, String note, String ownerId); 
+    void addNoteToContact(UUID contactId, String note, String ownerId); 
 
-    void removeNoteFromContact(Long contactId, Long noteId, String ownerId);
+    void removeNoteFromContact(UUID contactId, UUID noteId, String ownerId);
 
-    List<NoteDTO> getContactNotes(Long contactId, String ownerId);
+    List<NoteDTO> getContactNotes(UUID contactId, String ownerId);
 } 

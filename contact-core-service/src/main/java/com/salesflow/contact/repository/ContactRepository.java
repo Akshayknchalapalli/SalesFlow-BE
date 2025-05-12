@@ -10,9 +10,10 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface ContactRepository extends JpaRepository<Contact, Long> {
+public interface ContactRepository extends JpaRepository<Contact, UUID> {
     
     Optional<Contact> findByEmail(String email);
     
@@ -33,5 +34,5 @@ public interface ContactRepository extends JpaRepository<Contact, Long> {
     long countByOwnerIdAndStage(@Param("ownerId") String ownerId,
                                @Param("stage") Contact.ContactStage stage);
     
-    boolean existsByEmailAndIdNot(String email, Long id);
+    boolean existsByEmailAndIdNot(String email, UUID id);
 } 

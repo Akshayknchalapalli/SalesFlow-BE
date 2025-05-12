@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class ContactServiceImpl implements ContactService {
 
     @Override
     @Transactional
-    public ContactDTO updateContact(Long id, ContactDTO contactDTO, String ownerId) {
+    public ContactDTO updateContact(UUID id, ContactDTO contactDTO, String ownerId) {
         Contact contact = contactRepository.findById(id)
                 .orElseThrow(() -> new ContactNotFoundException("Contact not found with id: " + id));
 
@@ -79,7 +80,7 @@ public class ContactServiceImpl implements ContactService {
 
     @Override
     @Transactional
-    public void deleteContact(Long id, String ownerId) {
+    public void deleteContact(UUID id, String ownerId) {
         Contact contact = contactRepository.findById(id)
                 .orElseThrow(() -> new ContactNotFoundException("Contact not found with id: " + id));
 
@@ -93,7 +94,7 @@ public class ContactServiceImpl implements ContactService {
 
     @Override
     @Transactional(readOnly = true)
-    public ContactDTO getContact(Long id, String ownerId) {
+    public ContactDTO getContact(UUID id, String ownerId) {
         Contact contact = contactRepository.findById(id)
                 .orElseThrow(() -> new ContactNotFoundException("Contact not found with id: " + id));
 
@@ -161,7 +162,7 @@ public class ContactServiceImpl implements ContactService {
 
     @Override
     @Transactional
-    public void addTagToContact(Long contactId, Long tagId, String ownerId) {
+    public void addTagToContact(UUID contactId, UUID tagId, String ownerId) {
         Contact contact = contactRepository.findById(contactId)
                 .orElseThrow(() -> new ContactNotFoundException("Contact not found with id: " + contactId));
 
@@ -178,7 +179,7 @@ public class ContactServiceImpl implements ContactService {
 
     @Override
     @Transactional
-    public void removeTagFromContact(Long contactId, Long tagId, String ownerId) {
+    public void removeTagFromContact(UUID contactId, UUID tagId, String ownerId) {
         Contact contact = contactRepository.findById(contactId)
                 .orElseThrow(() -> new ContactNotFoundException("Contact not found with id: " + contactId));
 
@@ -195,7 +196,7 @@ public class ContactServiceImpl implements ContactService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<TagDTO> getContactTags(Long contactId, String ownerId) {
+    public List<TagDTO> getContactTags(UUID contactId, String ownerId) {
         Contact contact = contactRepository.findById(contactId)
                 .orElseThrow(() -> new ContactNotFoundException("Contact not found with id: " + contactId));
 
@@ -210,7 +211,7 @@ public class ContactServiceImpl implements ContactService {
 
     @Override
     @Transactional
-    public void addNoteToContact(Long contactId, String noteContent, String ownerId) {
+    public void addNoteToContact(UUID contactId, String noteContent, String ownerId) {
         Contact contact = contactRepository.findById(contactId)
                 .orElseThrow(() -> new ContactNotFoundException("Contact not found with id: " + contactId));
 
@@ -226,7 +227,7 @@ public class ContactServiceImpl implements ContactService {
 
     @Override
     @Transactional
-    public void removeNoteFromContact(Long contactId, Long noteId, String ownerId) {
+    public void removeNoteFromContact(UUID contactId, UUID noteId, String ownerId) {
         Contact contact = contactRepository.findById(contactId)
                 .orElseThrow(() -> new ContactNotFoundException("Contact not found with id: " + contactId));
 
@@ -245,7 +246,7 @@ public class ContactServiceImpl implements ContactService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<NoteDTO> getContactNotes(Long contactId, String ownerId) {
+    public List<NoteDTO> getContactNotes(UUID contactId, String ownerId) {
         Contact contact = contactRepository.findById(contactId)
                 .orElseThrow(() -> new ContactNotFoundException("Contact not found with id: " + contactId));
 
@@ -256,5 +257,11 @@ public class ContactServiceImpl implements ContactService {
         return contact.getNotes().stream()
                 .map(noteMapper::toDTO)
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean existsByEmailAndIdNot(String email, UUID id) {
+        return contactRepository.existsByEmailAndIdNot(email, id);
     }
 } 

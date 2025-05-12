@@ -17,7 +17,8 @@ public class ContactCoreApplication {
         
         // Set the environment variables for Spring Boot
         System.setProperty("SUPABASE_DB_URL", dotenv.get("SUPABASE_DB_URL"));
-        System.setProperty("SUPABASE_DB_PASSWORD", dotenv.get("SUPABASE_DB_PASSWORD"));
+        System.setProperty("DATABASE_PASSWORD", dotenv.get("DATABASE_PASSWORD"));
+        System.setProperty("DATABASE_USERNAME", dotenv.get("DATABASE_USERNAME"));
         SpringApplication.run(ContactCoreApplication.class, args);
     }
 } 

@@ -5,10 +5,11 @@ import lombok.Data;
 
 import java.time.Instant;
 import java.util.Set;
+import java.util.UUID;
 
 @Data
 public class ContactDTO {
-    private Long id;
+    private UUID id;
     private String firstName;
     private String lastName;
     private String email;

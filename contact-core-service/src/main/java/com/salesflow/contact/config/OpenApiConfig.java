@@ -2,22 +2,35 @@ package com.salesflow.contact.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
 
 @Configuration
 public class OpenApiConfig {
 
     @Bean
-    public OpenAPI contactServiceApi() {
+    public OpenAPI contactServiceOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
                         .title("Contact Core Service API")
-                        .description("API for managing contacts in the SalesFlow system")
-                        .version("1.0.0")
+                        .description("API documentation for the Contact Management Microservice")
+                        .version("1.0")
+                        .contact(new Contact()
+                                .name("SalesFlow Team")
+                                .email("support@salesflow.com")
+                                .url("https://salesflow.com"))
                         .license(new License()
                                 .name("Apache 2.0")
-                                .url("http://www.apache.org/licenses/LICENSE-2.0")));
+                                .url("http://www.apache.org/licenses/LICENSE-2.0.html")))
+                .servers(List.of(
+                        new Server()
+                                .url("/api")
+                                .description("Default Server URL")
+                ));
     }
 } 
