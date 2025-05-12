@@ -2,9 +2,9 @@ spring:
   application:
     name: contact-core-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/salesflow
-    username: postgres
-    password: postgres
+    url:url: jdbc:postgresql://db.rdczmzmusjfemlynaqdf.supabase.co:5432/postgres?user=postgres&password=${DATABASE_PASSWORD}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
