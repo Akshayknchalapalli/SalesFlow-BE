@@ -2,9 +2,13 @@ spring:
   application:
     name: contact-core-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/salesflow
+    # Replace with your Supabase connection URL
+    # Format: jdbc:postgresql://<project-id>.supabase.co:5432/postgres
+    url: ${SUPABASE_DB_URL}
+    # Your Supabase database user (usually 'postgres')
     username: postgres
-    password: postgres
+    # Replace with your Supabase database password
+    password: ${SUPABASE_DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -59,4 +63,10 @@ logging:
 # Disable Eureka client
 eureka:
   client:
-    enabled: false 
+    enabled: false
+
+# Supabase Configuration
+supabase:
+  url: ${SUPABASE_URL}
+  anon-key: ${SUPABASE_ANON_KEY}
+  service-role-key: ${SUPABASE_SERVICE_ROLE_KEY} 
