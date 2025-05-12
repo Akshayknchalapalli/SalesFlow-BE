@@ -24,12 +24,12 @@ public class ActivityNotificationService {
         return String.format(
             "Reminder: You have an upcoming activity scheduled for %s.\n" +
             "Type: %s\n" +
-            "Outcome: %s\n" +
-            "Notes: %s",
-            activity.getScheduledAt(),
+            "Title: %s\n" +
+            "Description: %s",
+            activity.getScheduledTime(),
             activity.getType(),
-            activity.getOutcome(),
-            activity.getNotes()
+            activity.getTitle(),
+            activity.getDescription()
         );
     }
 
@@ -37,12 +37,12 @@ public class ActivityNotificationService {
         return String.format(
             "URGENT: You have an overdue activity that was scheduled for %s.\n" +
             "Type: %s\n" +
-            "Outcome: %s\n" +
-            "Notes: %s",
-            activity.getScheduledAt(),
+            "Title: %s\n" +
+            "Description: %s",
+            activity.getScheduledTime(),
             activity.getType(),
-            activity.getOutcome(),
-            activity.getNotes()
+            activity.getTitle(),
+            activity.getDescription()
         );
     }
 } 

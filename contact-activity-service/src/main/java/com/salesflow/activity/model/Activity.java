@@ -1,61 +1,75 @@
 package com.salesflow.activity.model;
 
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-
-import javax.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
-@Entity
 @NoArgsConstructor
-@AllArgsConstructor
+@Entity
 @Table(name = "activities")
 public class Activity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
-    @Column(nullable = false)
-    private Long contactId;
+    @Column(name = "contact_id", nullable = false)
+    private UUID contactId;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "type", nullable = false)
     private ActivityType type;
 
-    @Column(nullable = false)
-    private String outcome;
+    @Column(name = "title", nullable = false)
+    private String title;
 
-    @Column(columnDefinition = "TEXT")
-    private String notes;
+    @Column(name = "description")
+    private String description;
 
-    @Column(name = "scheduled_at")
-    private LocalDateTime scheduledAt;
+    @Column(name = "status", nullable = false)
+    private String status;
 
-    @Column(name = "completed_at")
-    private LocalDateTime completedAt;
+    @Column(name = "priority")
+    private String priority;
+
+    @Column(name = "scheduled_time")
+    private LocalDateTime scheduledTime;
+
+    @Column(name = "completed_time")
+    private LocalDateTime completedTime;
 
     @Column(name = "assigned_to")
     private String assignedTo;
 
-    @Column(name = "next_step")
-    private String nextStep;
+    @Column(name = "created_by")
+    private String createdBy;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "updated_by")
+    private String updatedBy;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
+        if (status == null) {
+            status = "PENDING";
+        }
     }
 
     @PreUpdate
     protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
+        if (status.equals("COMPLETED") && completedTime == null) {
+            completedTime = LocalDateTime.now();
+        }
     }
 } 

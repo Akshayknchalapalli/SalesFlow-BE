@@ -1,39 +1,34 @@
 package com.salesflow.activity.dto;
 
 import com.salesflow.activity.model.ActivityType;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-
-import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class ActivityDTO {
-    private Long id;
+    private UUID id;
     
     @NotNull(message = "Contact ID is required")
-    private Long contactId;
+    private UUID contactId;
     
     @NotNull(message = "Activity type is required")
     private ActivityType type;
     
-    @NotNull(message = "Outcome is required")
-    private String outcome;
+    @NotNull(message = "Title is required")
+    private String title;
     
-    private String notes;
-    
-    private LocalDateTime scheduledAt;
-    
-    private LocalDateTime completedAt;
-    
+    private String description;
+    private String status;
+    private String priority;
+    private LocalDateTime scheduledTime;
+    private LocalDateTime completedTime;
     private String assignedTo;
-    
-    private String nextStep;
-    
+    private String createdBy;
+    private String updatedBy;
     private LocalDateTime createdAt;
-    
     private LocalDateTime updatedAt;
 } 

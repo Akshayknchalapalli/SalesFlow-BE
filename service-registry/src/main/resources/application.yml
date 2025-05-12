@@ -9,18 +9,29 @@ eureka:
   client:
     register-with-eureka: false
     fetch-registry: false
+    service-url:
+      defaultZone: http://localhost:${server.port}/eureka/
   server:
     wait-time-in-ms-when-sync-empty: 0
     enable-self-preservation: false
+    renewal-percent-threshold: 0.85
+    eviction-interval-timer-in-ms: 1000
+  instance:
+    hostname: localhost
+    prefer-ip-address: true
 
 management:
   endpoints:
     web:
       exposure:
         include: health,info,prometheus
+      base-path: /actuator
   endpoint:
     health:
       show-details: always
+      group:
+        readiness:
+          include: db,eureka
 
 logging:
   level:

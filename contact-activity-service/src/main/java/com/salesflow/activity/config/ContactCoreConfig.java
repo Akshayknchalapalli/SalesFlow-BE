@@ -62,7 +62,6 @@ public class ContactCoreConfig {
     public RetryConfig retryConfig() {
         return RetryConfig.custom()
                 .maxAttempts(maxAttempts)
-                .waitDuration(Duration.ofMillis(initialInterval))
                 .intervalFunction(interval -> Math.min(
                         (long) (interval * multiplier),
                         maxInterval

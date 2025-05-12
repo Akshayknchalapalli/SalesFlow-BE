@@ -6,75 +6,89 @@ import com.salesflow.activity.dto.TimelineDTO;
 import com.salesflow.activity.model.ActivityType;
 import com.salesflow.activity.service.ActivityService;
 import com.salesflow.activity.service.ActivityStatsService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/activities")
 @RequiredArgsConstructor
+@Tag(name = "Activity Management", description = "APIs for managing contact activities")
 public class ActivityController {
     private final ActivityService activityService;
     private final ActivityStatsService activityStatsService;
 
     @PostMapping
+    @Operation(summary = "Create a new activity")
     public ResponseEntity<ActivityDTO> createActivity(@Valid @RequestBody ActivityDTO activityDTO) {
-        return ResponseEntity.ok(activityService.createActivity(activityDTO));
+        return ResponseEntity.created(null).body(activityService.createActivity(activityDTO));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ActivityDTO> getActivity(@PathVariable Long id) {
+    @Operation(summary = "Get activity by ID")
+    public ResponseEntity<ActivityDTO> getActivity(@PathVariable UUID id) {
         return ResponseEntity.ok(activityService.getActivity(id));
     }
 
     @GetMapping("/contact/{contactId}")
-    public ResponseEntity<List<ActivityDTO>> getActivitiesByContact(@PathVariable Long contactId) {
+    @Operation(summary = "Get all activities for a contact")
+    public ResponseEntity<List<ActivityDTO>> getActivitiesByContact(@PathVariable UUID contactId) {
         return ResponseEntity.ok(activityService.getActivitiesByContact(contactId));
     }
 
     @GetMapping("/contact/{contactId}/type/{type}")
+    @Operation(summary = "Get activities by type for a contact")
     public ResponseEntity<List<ActivityDTO>> getActivitiesByType(
-            @PathVariable Long contactId,
+            @PathVariable UUID contactId,
             @PathVariable ActivityType type) {
         return ResponseEntity.ok(activityService.getActivitiesByType(contactId, type));
     }
 
     @GetMapping("/pending/{assignedTo}")
+    @Operation(summary = "Get pending activities for a user")
     public ResponseEntity<List<ActivityDTO>> getPendingActivities(@PathVariable String assignedTo) {
         return ResponseEntity.ok(activityService.getPendingActivities(assignedTo));
     }
 
-    @PutMapping("/{id}/complete")
-    public ResponseEntity<ActivityDTO> completeActivity(@PathVariable Long id) {
-        return ResponseEntity.ok(activityService.completeActivity(id));
-    }
-
     @PutMapping("/{id}")
+    @Operation(summary = "Update an activity")
     public ResponseEntity<ActivityDTO> updateActivity(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody ActivityDTO activityDTO) {
         return ResponseEntity.ok(activityService.updateActivity(id, activityDTO));
     }
 
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete an activity")
+    public ResponseEntity<Void> deleteActivity(@PathVariable UUID id) {
+        activityService.deleteActivity(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/contact/{contactId}/stats")
-    public ResponseEntity<ActivityStatsDTO> getContactActivityStats(@PathVariable Long contactId) {
-        return ResponseEntity.ok(activityStatsService.getContactActivityStats(contactId));
+    @Operation(summary = "Get activity statistics for a contact")
+    public ResponseEntity<ActivityStatsDTO> getActivityStats(@PathVariable UUID contactId) {
+        return ResponseEntity.ok(activityStatsService.getActivityStats(contactId));
     }
 
     @GetMapping("/contact/{contactId}/timeline")
-    public ResponseEntity<List<TimelineDTO>> getContactTimeline(
-            @PathVariable Long contactId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
-        return ResponseEntity.ok(activityService.getContactTimeline(contactId, startDate, endDate));
+    @Operation(summary = "Get contact timeline")
+    public ResponseEntity<TimelineDTO> getContactTimeline(
+            @PathVariable UUID contactId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate) {
+        return ResponseEntity.ok(activityService.getContactTimeline(contactId, startDate));
     }
 
     @GetMapping("/search")
+    @Operation(summary = "Search activities")
     public ResponseEntity<List<ActivityDTO>> searchActivities(
             @RequestParam(required = false) String query,
             @RequestParam(required = false) ActivityType type,
@@ -82,5 +96,11 @@ public class ActivityController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
         return ResponseEntity.ok(activityService.searchActivities(query, type, assignedTo, startDate, endDate));
+    }
+
+    @PostMapping("/{id}/complete")
+    @Operation(summary = "Mark an activity as completed")
+    public ResponseEntity<ActivityDTO> completeActivity(@PathVariable UUID id) {
+        return ResponseEntity.ok(activityService.completeActivity(id));
     }
 } 
