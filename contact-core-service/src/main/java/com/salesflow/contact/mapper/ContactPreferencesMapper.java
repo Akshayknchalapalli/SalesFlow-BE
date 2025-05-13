@@ -28,6 +28,7 @@ public interface ContactPreferencesMapper {
     @InheritInverseConfiguration(name = "toDTO")
     @Mapping(target = "preferredContactMethod", source = "preferredContactMethod", qualifiedByName = "contactMethodToString")
     @Mapping(target = "preferredContactTime", source = "preferredContactTime", qualifiedByName = "contactTimeToString")
+    @Mapping(target = "communicationLanguage", source = "communicationLanguage")
     ContactPreferences toEntity(ContactPreferencesDTO dto);
 
     @InheritConfiguration(name = "toEntity")

@@ -9,6 +9,7 @@ import org.mapstruct.ReportingPolicy;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.InheritInverseConfiguration;
 import org.mapstruct.InheritConfiguration;
+import org.mapstruct.Named;
 
 @Mapper(componentModel = "spring",
         uses = {ContactPreferencesMapper.class, AddressMapper.class, SocialProfileMapper.class, 
@@ -23,7 +24,7 @@ public interface ContactMapper {
     @Mapping(target = "phone", source = "phone")
     @Mapping(target = "companyName", source = "companyName")
     @Mapping(target = "jobTitle", source = "jobTitle")
-    @Mapping(target = "stage", source = "stage")
+    @Mapping(target = "stage", source = "stage", qualifiedByName = "stringToStage")
     @Mapping(target = "ownerId", source = "ownerId")
     @Mapping(target = "teamId", source = "teamId")
     @Mapping(target = "regionId", source = "regionId")
@@ -48,8 +49,19 @@ public interface ContactMapper {
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
     @Mapping(target = "relatedContacts", ignore = true)
+    @Mapping(target = "stage", source = "stage", qualifiedByName = "stageToString")
     Contact toEntity(ContactDTO dto);
 
     @InheritConfiguration(name = "toEntity")
     void updateEntityFromDTO(ContactDTO dto, @MappingTarget Contact entity);
+
+    @Named("stringToStage")
+    default Contact.ContactStage stringToStage(String value) {
+        return value == null ? null : Contact.ContactStage.valueOf(value);
+    }
+
+    @Named("stageToString")
+    default String stageToString(Contact.ContactStage value) {
+        return value == null ? null : value.name();
+    }
 } 

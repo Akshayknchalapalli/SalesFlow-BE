@@ -27,12 +27,55 @@ import java.util.UUID;
 public class ContactController {
     private final ContactService contactService;
 
-    @Operation(summary = "Create a new contact", description = "Creates a new contact with the provided details")
+    @Operation(
+        summary = "Create a new contact",
+        description = """
+            Creates a new contact with the provided details.
+            
+            ## Required Fields
+            - firstName: First name of the contact
+            - lastName: Last name of the contact
+            - stage: Contact stage (LEAD, PROSPECT, CUSTOMER, INACTIVE, PARTNER)
+            - ownerId: ID of the contact owner
+            
+            ## Optional Fields
+            - email: Email address (must be unique if provided)
+            - phone: Phone number
+            - companyName: Company name
+            - jobTitle: Job title
+            - teamId: Team ID
+            - regionId: Region ID
+            - preferences: Contact preferences
+            - addresses: List of addresses
+            - socialProfiles: List of social profiles
+            
+            ## Example Request
+            ```json
+            {
+              "firstName": "John",
+              "lastName": "Doe",
+              "email": "john.doe@example.com",
+              "phone": "+1234567890",
+              "companyName": "Acme Corp",
+              "jobTitle": "Sales Manager",
+              "stage": "LEAD",
+              "ownerId": "user123",
+              "preferences": {
+                "preferredContactMethod": "EMAIL",
+                "preferredContactTime": "MORNING",
+                "doNotContact": false,
+                "marketingOptIn": true
+              }
+            }
+            ```
+            """
+    )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Contact created successfully",
             content = @Content(schema = @Schema(implementation = ContactApiResponse.class))),
-        @ApiResponse(responseCode = "400", description = "Invalid input"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized")
+        @ApiResponse(responseCode = "400", description = "Invalid input - Check the request body for validation errors"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Missing or invalid X-Owner-Id header"),
+        @ApiResponse(responseCode = "409", description = "Conflict - Email already exists")
     })
     @PostMapping
     public ResponseEntity<ContactApiResponse<ContactDTO>> createContact(

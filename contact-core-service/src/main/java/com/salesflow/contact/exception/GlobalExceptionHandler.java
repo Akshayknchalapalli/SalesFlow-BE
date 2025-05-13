@@ -1,6 +1,6 @@
-package com.salesflow.activity.exception;
+package com.salesflow.contact.exception;
 
-import com.salesflow.activity.dto.ApiResponse;
+import com.salesflow.contact.dto.ContactApiResponse;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
@@ -11,35 +11,36 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(ActivityNotFoundException.class)
-    public ResponseEntity<ApiResponse<Void>> handleActivityNotFoundException(ActivityNotFoundException ex) {
+    @ExceptionHandler(ContactNotFoundException.class)
+    public ResponseEntity<ContactApiResponse<Void>> handleContactNotFoundException(ContactNotFoundException ex) {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .body(ApiResponse.error("Activity not found", ex.getMessage()));
+                .body(ContactApiResponse.error("Contact not found", ex.getMessage()));
     }
 
-    @ExceptionHandler(InvalidActivityStateException.class)
-    public ResponseEntity<ApiResponse<Void>> handleInvalidActivityStateException(InvalidActivityStateException ex) {
+    @ExceptionHandler(DuplicateEmailException.class)
+    public ResponseEntity<ContactApiResponse<Void>> handleDuplicateEmailException(DuplicateEmailException ex) {
         return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error("Invalid activity state", ex.getMessage()));
+                .status(HttpStatus.CONFLICT)
+                .body(ContactApiResponse.error("Duplicate email", ex.getMessage()));
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<ApiResponse<Void>> handleEntityNotFoundException(EntityNotFoundException ex) {
+    public ResponseEntity<ContactApiResponse<Void>> handleEntityNotFoundException(EntityNotFoundException ex) {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .body(ApiResponse.error("Resource not found", ex.getMessage()));
+                .body(ContactApiResponse.error("Resource not found", ex.getMessage()));
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ApiResponse<Map<String, String>>> handleConstraintViolationException(ConstraintViolationException ex) {
+    public ResponseEntity<ContactApiResponse<Map<String, String>>> handleConstraintViolationException(ConstraintViolationException ex) {
         Map<String, String> errors = new HashMap<>();
         ex.getConstraintViolations().forEach(violation -> {
             String fieldName = violation.getPropertyPath().toString();
@@ -48,11 +49,11 @@ public class GlobalExceptionHandler {
         });
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error("Validation failed", errors));
+                .body(ContactApiResponse.error("Validation failed", errors));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<Map<String, String>>> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ContactApiResponse<Map<String, String>>> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach(error -> {
             String fieldName = ((FieldError) error).getField();
@@ -61,20 +62,20 @@ public class GlobalExceptionHandler {
         });
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error("Validation failed", errors));
+                .body(ContactApiResponse.error("Validation failed", errors));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiResponse<Void>> handleIllegalArgumentException(IllegalArgumentException ex) {
+    public ResponseEntity<ContactApiResponse<Void>> handleIllegalArgumentException(IllegalArgumentException ex) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error("Invalid argument", ex.getMessage()));
+                .body(ContactApiResponse.error("Invalid argument", ex.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Void>> handleGenericException(Exception ex, WebRequest request) {
+    public ResponseEntity<ContactApiResponse<Void>> handleGenericException(Exception ex, WebRequest request) {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("An unexpected error occurred", "Please try again later"));
+                .body(ContactApiResponse.error("An unexpected error occurred", "Please try again later"));
     }
 } 
