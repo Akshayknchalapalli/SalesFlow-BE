@@ -28,6 +28,10 @@ spring:
     clean-disabled: true
     out-of-order: false
     placeholder-replacement: false
+    user: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+    url: ${SUPABASE_DATABASE_URL}
+    schemas: contact_activity
   redis:
     host: localhost
     port: 6379
