@@ -30,8 +30,6 @@ public class ActivityService {
     public ApiResponse<ActivityDTO> createActivity(ActivityDTO activityDTO) {
         log.debug("Creating activity for contact ID: {}", activityDTO.getContactId());
         try {
-            // TODO: Re-enable contact existence check once contact-core-service is available
-            /*
             // Verify if contact exists
             ResponseEntity<Boolean> response = contactCoreClient.checkContactExists(activityDTO.getContactId());
             log.debug("Contact existence check response: {}", response);
@@ -40,7 +38,6 @@ public class ActivityService {
                 log.error("Contact not found with ID: {}", activityDTO.getContactId());
                 return ApiResponse.error("Contact not found with ID: " + activityDTO.getContactId());
             }
-            */
 
             Activity activity = new Activity();
             activity.setContactId(activityDTO.getContactId());
