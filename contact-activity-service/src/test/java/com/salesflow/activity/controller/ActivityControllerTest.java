@@ -1,6 +1,7 @@
 package com.salesflow.activity.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.salesflow.activity.config.TestSecurityConfig;
 import com.salesflow.activity.dto.ActivityDTO;
 import com.salesflow.activity.dto.ActivityStatsDTO;
 import com.salesflow.activity.dto.ApiResponse;
@@ -9,7 +10,6 @@ import com.salesflow.activity.model.ActivityType;
 import com.salesflow.activity.service.ActivityService;
 import com.salesflow.activity.service.ActivityStatsService;
 import com.salesflow.activity.client.ContactCoreClient;
-import com.salesflow.activity.config.TestConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +31,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ActivityController.class)
-@Import(TestConfig.class)
+@Import(TestSecurityConfig.class)
 public class ActivityControllerTest {
 
     @Autowired
@@ -85,7 +85,7 @@ public class ActivityControllerTest {
     void createActivity_Success() throws Exception {
         when(activityService.createActivity(any(ActivityDTO.class))).thenReturn(successResponse);
 
-        mockMvc.perform(post("/activities")
+        mockMvc.perform(post("/api/v1/activities")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(testActivityDTO)))
                 .andExpect(status().isOk())
@@ -98,7 +98,7 @@ public class ActivityControllerTest {
     void getActivity_Success() throws Exception {
         when(activityService.getActivity(testId)).thenReturn(successResponse);
 
-        mockMvc.perform(get("/activities/{id}", testId))
+        mockMvc.perform(get("/api/v1/activities/{id}", testId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("Success"))
@@ -109,7 +109,7 @@ public class ActivityControllerTest {
     void getActivitiesByContact_Success() throws Exception {
         when(activityService.getActivitiesByContact(testContactId)).thenReturn(successListResponse);
 
-        mockMvc.perform(get("/activities/contact/{contactId}", testContactId))
+        mockMvc.perform(get("/api/v1/activities/contact/{contactId}", testContactId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("Success"))
@@ -120,7 +120,7 @@ public class ActivityControllerTest {
     void getActivitiesByType_Success() throws Exception {
         when(activityService.getActivitiesByType(testContactId, ActivityType.CALL)).thenReturn(successListResponse);
 
-        mockMvc.perform(get("/activities/contact/{contactId}/type/{type}", testContactId, ActivityType.CALL))
+        mockMvc.perform(get("/api/v1/activities/contact/{contactId}/type/{type}", testContactId, ActivityType.CALL))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("Success"))
@@ -131,7 +131,7 @@ public class ActivityControllerTest {
     void updateActivity_Success() throws Exception {
         when(activityService.updateActivity(any(UUID.class), any(ActivityDTO.class))).thenReturn(successResponse);
 
-        mockMvc.perform(put("/activities/{id}", testId)
+        mockMvc.perform(put("/api/v1/activities/{id}", testId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(testActivityDTO)))
                 .andExpect(status().isOk())
@@ -144,7 +144,7 @@ public class ActivityControllerTest {
     void deleteActivity_Success() throws Exception {
         when(activityService.deleteActivity(testId)).thenReturn(ApiResponse.success("Success", null));
 
-        mockMvc.perform(delete("/activities/{id}", testId))
+        mockMvc.perform(delete("/api/v1/activities/{id}", testId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("Success"));
@@ -155,7 +155,7 @@ public class ActivityControllerTest {
         when(activityService.getContactTimeline(any(UUID.class), any(LocalDateTime.class)))
                 .thenReturn(successTimelineResponse);
 
-        mockMvc.perform(get("/activities/contact/{contactId}/timeline", testContactId)
+        mockMvc.perform(get("/api/v1/activities/contact/{contactId}/timeline", testContactId)
                 .param("startDate", LocalDateTime.now().toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
@@ -172,7 +172,7 @@ public class ActivityControllerTest {
 
         when(activityStatsService.getActivityStats(testContactId)).thenReturn(statsDTO);
 
-        mockMvc.perform(get("/activities/contact/{contactId}/stats", testContactId))
+        mockMvc.perform(get("/api/v1/activities/contact/{contactId}/stats", testContactId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.contactId").value(testContactId.toString()))
                 .andExpect(jsonPath("$.totalActivities").value(5))

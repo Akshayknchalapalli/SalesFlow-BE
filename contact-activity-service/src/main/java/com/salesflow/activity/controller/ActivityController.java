@@ -22,34 +22,32 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/activities")
+@RequestMapping("/api/v1/activities")
 @RequiredArgsConstructor
-@Tag(name = "Activity Management", description = "APIs for managing contact activities")
+@Tag(name = "Activity Controller", description = "APIs for managing contact activities")
 @Slf4j
 public class ActivityController {
     private final ActivityService activityService;
     private final ActivityStatsService activityStatsService;
 
+    @Operation(summary = "Create a new activity", description = "Creates a new activity for a contact")
     @PostMapping
-    @Operation(summary = "Create a new activity")
     public ResponseEntity<ApiResponse<ActivityDTO>> createActivity(@Valid @RequestBody ActivityDTO activityDTO) {
         log.debug("Received request to create activity: {}", activityDTO);
         ApiResponse<ActivityDTO> response = activityService.createActivity(activityDTO);
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Get an activity by ID", description = "Retrieves an activity's details by its ID")
     @GetMapping("/{id}")
-    @Operation(summary = "Get activity by ID")
-    public ResponseEntity<ApiResponse<ActivityDTO>> getActivity(
-            @Parameter(description = "Activity ID") @PathVariable UUID id) {
+    public ResponseEntity<ApiResponse<ActivityDTO>> getActivity(@PathVariable UUID id) {
         ApiResponse<ActivityDTO> response = activityService.getActivity(id);
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "List activities for a contact", description = "Retrieves all activities for a specific contact")
     @GetMapping("/contact/{contactId}")
-    @Operation(summary = "Get all activities for a contact")
-    public ResponseEntity<ApiResponse<List<ActivityDTO>>> getActivitiesByContact(
-            @Parameter(description = "Contact ID") @PathVariable UUID contactId) {
+    public ResponseEntity<ApiResponse<List<ActivityDTO>>> getActivitiesByContact(@PathVariable UUID contactId) {
         ApiResponse<List<ActivityDTO>> response = activityService.getActivitiesByContact(contactId);
         return ResponseEntity.ok(response);
     }
@@ -121,5 +119,11 @@ public class ActivityController {
             @Parameter(description = "Activity ID") @PathVariable UUID id) {
         ApiResponse<ActivityDTO> response = activityService.completeActivity(id);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/test-security")
+    @Operation(summary = "Test security integration", description = "This endpoint is secured and requires a valid JWT token")
+    public ResponseEntity<ApiResponse<String>> testSecurity() {
+        return ResponseEntity.ok(ApiResponse.success("Security test successful", "You have access to this secured endpoint!"));
     }
 } 

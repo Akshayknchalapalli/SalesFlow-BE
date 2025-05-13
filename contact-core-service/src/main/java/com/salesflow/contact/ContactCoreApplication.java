@@ -6,10 +6,13 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.kafka.annotation.EnableKafka;
 import io.github.cdimascio.dotenv.Dotenv;
+import org.springframework.cloud.openfeign.EnableFeignClients;
+
 @SpringBootApplication
 @EnableDiscoveryClient
 @EnableJpaAuditing
 @EnableKafka
+@EnableFeignClients(basePackages = {"com.salesflow.auth.client", "com.salesflow.contact.client"})
 public class ContactCoreApplication {
     public static void main(String[] args) {
         // Load environment variables from .env file

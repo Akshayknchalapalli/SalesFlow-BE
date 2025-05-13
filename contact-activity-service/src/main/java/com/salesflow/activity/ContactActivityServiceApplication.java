@@ -10,7 +10,7 @@ import com.salesflow.activity.config.LoadBalancerConfiguration;
 
 @SpringBootApplication
 @EnableDiscoveryClient
-@EnableFeignClients
+@EnableFeignClients(basePackages = {"com.salesflow.auth.client", "com.salesflow.activity.client"})
 @LoadBalancerClients(defaultConfiguration = LoadBalancerConfiguration.class)
 public class ContactActivityServiceApplication {
     public static void main(String[] args) {

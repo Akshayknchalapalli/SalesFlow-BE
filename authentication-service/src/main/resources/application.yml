@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: auth-service
+  datasource:
+    url: ${SUPABASE_DB_URL}
+    username: ${SUPABASE_DB_USER}
+    password: ${SUPABASE_DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: true
+  sql:
+    init:
+      mode: always
+
+server:
+  port: 8081
+  servlet:
+    context-path: /api
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+jwt:
+  secret-key: ${JWT_SECRET_KEY:f0926e3ba06fa732881d442d3f21cb38fde9892c53f31cf9c19ff46d3fadc305ea97698710f584fdb454ee4e6ddaeff0135e8ec427144b46c6dfe8afff47bb078cc8e5db1fa5aa6151784a724e42c4841bba7a926cbc39a21b181a39d590096711ec5f3b6070358e5fd378ebf7949ee823ca2af4feda2c6ba450a0896ddb27a5cd552356520bca7c66f15479806daefe9b4e54c362e76aa8389ea939bf12c97bfe03931b9897aa90184e59e2760e043f4092851f599548e8cf76411aa7da5550f1bdfaf76ebd7faa7416f507717013a0e904feb837792b7d3e6886394d1789b12a48a8705d8df3730c63d8b9d378e0f5c593ef07911a56f74b0816ff8048857a}
+  access-token-validity-in-minutes: 30
+  refresh-token-validity-in-days: 7
+
+logging:
+  level:
+    com.salesflow.auth: DEBUG
+    org.springframework.security: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method 

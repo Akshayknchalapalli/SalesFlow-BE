@@ -237,4 +237,10 @@ public class ContactController {
         List<ContactDTO> createdContacts = contactService.createBulkContacts(contactDTOs, ownerId);
         return ResponseEntity.ok(ContactApiResponse.success("Contacts created successfully", createdContacts));
     }
+
+    @GetMapping("/test-security")
+    @Operation(summary = "Test security integration", description = "This endpoint is secured and requires a valid JWT token")
+    public ResponseEntity<ContactApiResponse<String>> testSecurity() {
+        return ResponseEntity.ok(ContactApiResponse.success("Security test successful", "You have access to this secured endpoint!"));
+    }
 } 
