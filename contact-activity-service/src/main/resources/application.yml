@@ -1,6 +1,12 @@
 spring:
   application:
     name: contact-activity-service
+  security:
+    basic:
+      enabled: false
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
   datasource:
     url: jdbc:postgresql://db.rdczmzmusjfemlynaqdf.supabase.co:5432/postgres
     username: postgres
@@ -64,7 +70,7 @@ contact:
 server:
   port: 8082
   servlet:
-    context-path: /api
+    context-path: /api/v1
 
 management:
   endpoints:

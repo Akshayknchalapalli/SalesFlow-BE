@@ -3,11 +3,13 @@ package com.salesflow.activity.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.salesflow.activity.dto.ActivityDTO;
 import com.salesflow.activity.dto.ActivityStatsDTO;
+import com.salesflow.activity.dto.ApiResponse;
 import com.salesflow.activity.dto.TimelineDTO;
 import com.salesflow.activity.model.ActivityType;
 import com.salesflow.activity.service.ActivityService;
 import com.salesflow.activity.service.ActivityStatsService;
-import com.salesflow.activity.config.TestSecurityConfig;
+import com.salesflow.activity.client.ContactCoreClient;
+import com.salesflow.activity.config.TestConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +31,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ActivityController.class)
-@Import(TestSecurityConfig.class)
+@Import(TestConfig.class)
 public class ActivityControllerTest {
 
     @Autowired
@@ -44,14 +46,21 @@ public class ActivityControllerTest {
     @MockBean
     private ActivityStatsService activityStatsService;
 
+    @MockBean
+    private ContactCoreClient contactCoreClient;
+
     private UUID testId;
     private UUID testContactId;
     private ActivityDTO testActivityDTO;
+    private ApiResponse<ActivityDTO> successResponse;
+    private ApiResponse<List<ActivityDTO>> successListResponse;
+    private ApiResponse<TimelineDTO> successTimelineResponse;
 
     @BeforeEach
     void setUp() {
         testId = UUID.randomUUID();
         testContactId = UUID.randomUUID();
+        
         testActivityDTO = new ActivityDTO();
         testActivityDTO.setId(testId);
         testActivityDTO.setContactId(testContactId);
@@ -59,83 +68,99 @@ public class ActivityControllerTest {
         testActivityDTO.setTitle("Test Activity");
         testActivityDTO.setDescription("Test Description");
         testActivityDTO.setScheduledTime(LocalDateTime.now().plusDays(1));
-    }
-
-    @Test
-    void testCreateActivity() throws Exception {
-        when(activityService.createActivity(any(ActivityDTO.class))).thenReturn(testActivityDTO);
-
-        mockMvc.perform(post("/api/v1/activities")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(testActivityDTO)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(testId.toString()))
-                .andExpect(jsonPath("$.contactId").value(testContactId.toString()));
-    }
-
-    @Test
-    void testGetActivity() throws Exception {
-        when(activityService.getActivity(testId)).thenReturn(testActivityDTO);
-
-        mockMvc.perform(get("/api/v1/activities/{id}", testId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(testId.toString()))
-                .andExpect(jsonPath("$.contactId").value(testContactId.toString()));
-    }
-
-    @Test
-    void testGetActivitiesByContact() throws Exception {
-        List<ActivityDTO> activities = Arrays.asList(testActivityDTO);
-        when(activityService.getActivitiesByContact(testContactId)).thenReturn(activities);
-
-        mockMvc.perform(get("/api/v1/activities/contact/{contactId}", testContactId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(testId.toString()))
-                .andExpect(jsonPath("$[0].contactId").value(testContactId.toString()));
-    }
-
-    @Test
-    void testUpdateActivity() throws Exception {
-        when(activityService.updateActivity(eq(testId), any(ActivityDTO.class))).thenReturn(testActivityDTO);
-
-        mockMvc.perform(put("/api/v1/activities/{id}", testId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(testActivityDTO)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(testId.toString()))
-                .andExpect(jsonPath("$.contactId").value(testContactId.toString()));
-    }
-
-    @Test
-    void testCompleteActivity() throws Exception {
-        when(activityService.completeActivity(testId)).thenReturn(testActivityDTO);
-
-        mockMvc.perform(post("/api/v1/activities/{id}/complete", testId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(testId.toString()))
-                .andExpect(jsonPath("$.contactId").value(testContactId.toString()));
-    }
-
-    @Test
-    void testDeleteActivity() throws Exception {
-        mockMvc.perform(delete("/api/v1/activities/{id}", testId))
-                .andExpect(status().isNoContent());
-    }
-
-    @Test
-    void testGetContactTimeline() throws Exception {
+        
+        successResponse = ApiResponse.success("Success", testActivityDTO);
+        successListResponse = ApiResponse.success("Success", Arrays.asList(testActivityDTO));
+        
         TimelineDTO timelineDTO = new TimelineDTO();
         timelineDTO.setContactId(testContactId);
         timelineDTO.setActivities(Arrays.asList(testActivityDTO));
+        successTimelineResponse = ApiResponse.success("Success", timelineDTO);
 
-        when(activityService.getContactTimeline(eq(testContactId), any(LocalDateTime.class)))
-                .thenReturn(timelineDTO);
+        when(contactCoreClient.checkContactExists(any(UUID.class)))
+            .thenReturn(org.springframework.http.ResponseEntity.ok(true));
+    }
 
-        mockMvc.perform(get("/api/v1/activities/contact/{contactId}/timeline", testContactId)
+    @Test
+    void createActivity_Success() throws Exception {
+        when(activityService.createActivity(any(ActivityDTO.class))).thenReturn(successResponse);
+
+        mockMvc.perform(post("/activities")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(testActivityDTO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Success"))
+                .andExpect(jsonPath("$.data.id").value(testId.toString()));
+    }
+
+    @Test
+    void getActivity_Success() throws Exception {
+        when(activityService.getActivity(testId)).thenReturn(successResponse);
+
+        mockMvc.perform(get("/activities/{id}", testId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Success"))
+                .andExpect(jsonPath("$.data.id").value(testId.toString()));
+    }
+
+    @Test
+    void getActivitiesByContact_Success() throws Exception {
+        when(activityService.getActivitiesByContact(testContactId)).thenReturn(successListResponse);
+
+        mockMvc.perform(get("/activities/contact/{contactId}", testContactId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Success"))
+                .andExpect(jsonPath("$.data[0].id").value(testId.toString()));
+    }
+
+    @Test
+    void getActivitiesByType_Success() throws Exception {
+        when(activityService.getActivitiesByType(testContactId, ActivityType.CALL)).thenReturn(successListResponse);
+
+        mockMvc.perform(get("/activities/contact/{contactId}/type/{type}", testContactId, ActivityType.CALL))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Success"))
+                .andExpect(jsonPath("$.data[0].id").value(testId.toString()));
+    }
+
+    @Test
+    void updateActivity_Success() throws Exception {
+        when(activityService.updateActivity(any(UUID.class), any(ActivityDTO.class))).thenReturn(successResponse);
+
+        mockMvc.perform(put("/activities/{id}", testId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(testActivityDTO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Success"))
+                .andExpect(jsonPath("$.data.id").value(testId.toString()));
+    }
+
+    @Test
+    void deleteActivity_Success() throws Exception {
+        when(activityService.deleteActivity(testId)).thenReturn(ApiResponse.success("Success", null));
+
+        mockMvc.perform(delete("/activities/{id}", testId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Success"));
+    }
+
+    @Test
+    void getContactTimeline_Success() throws Exception {
+        when(activityService.getContactTimeline(any(UUID.class), any(LocalDateTime.class)))
+                .thenReturn(successTimelineResponse);
+
+        mockMvc.perform(get("/activities/contact/{contactId}/timeline", testContactId)
                 .param("startDate", LocalDateTime.now().toString()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.contactId").value(testContactId.toString()))
-                .andExpect(jsonPath("$.activities[0].id").value(testId.toString()));
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Success"))
+                .andExpect(jsonPath("$.data.contactId").value(testContactId.toString()));
     }
 
     @Test
@@ -147,7 +172,7 @@ public class ActivityControllerTest {
 
         when(activityStatsService.getActivityStats(testContactId)).thenReturn(statsDTO);
 
-        mockMvc.perform(get("/api/v1/activities/contact/{contactId}/stats", testContactId))
+        mockMvc.perform(get("/activities/contact/{contactId}/stats", testContactId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.contactId").value(testContactId.toString()))
                 .andExpect(jsonPath("$.totalActivities").value(5))

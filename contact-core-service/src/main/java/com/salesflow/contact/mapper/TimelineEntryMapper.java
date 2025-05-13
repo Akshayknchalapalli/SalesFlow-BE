@@ -16,7 +16,6 @@ import org.mapstruct.InheritConfiguration;
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface TimelineEntryMapper {
     
-    @Mapping(target = "id", source = "id")
     @Mapping(target = "contactId", source = "contact.id")
     @Mapping(target = "title", source = "title")
     @Mapping(target = "description", source = "description")
@@ -30,7 +29,6 @@ public interface TimelineEntryMapper {
     
     @InheritInverseConfiguration(name = "toDTO")
     @Mapping(target = "contact", ignore = true)
-    @Mapping(target = "id", ignore = true)
     @Mapping(target = "version", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)

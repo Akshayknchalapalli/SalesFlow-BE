@@ -7,6 +7,8 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.ReportingPolicy;
 import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.InheritInverseConfiguration;
+import org.mapstruct.InheritConfiguration;
 
 @Mapper(componentModel = "spring",
         uses = {ContactPreferencesMapper.class, AddressMapper.class, SocialProfileMapper.class, 
@@ -15,7 +17,6 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface ContactMapper {
     
-    @Mapping(target = "id", source = "id")
     @Mapping(target = "firstName", source = "firstName")
     @Mapping(target = "lastName", source = "lastName")
     @Mapping(target = "email", source = "email")
@@ -40,17 +41,15 @@ public interface ContactMapper {
     @Mapping(target = "version", source = "version")
     ContactDTO toDTO(Contact entity);
 
-    @Mapping(target = "id", ignore = true)
+    @InheritInverseConfiguration(name = "toDTO")
     @Mapping(target = "version", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
     @Mapping(target = "relatedContacts", ignore = true)
     Contact toEntity(ContactDTO dto);
 
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "version", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "relatedContacts", ignore = true)
+    @InheritConfiguration(name = "toEntity")
     void updateEntityFromDTO(ContactDTO dto, @MappingTarget Contact entity);
 } 

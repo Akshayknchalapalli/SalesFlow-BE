@@ -7,13 +7,14 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.ReportingPolicy;
 import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.InheritInverseConfiguration;
+import org.mapstruct.InheritConfiguration;
 
 @Mapper(componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.IGNORE,
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface TagMapper {
     
-    @Mapping(target = "id", source = "id")
     @Mapping(target = "name", source = "name")
     @Mapping(target = "description", source = "description")
     @Mapping(target = "colorHex", source = "colorHex")
@@ -25,15 +26,14 @@ public interface TagMapper {
     @Mapping(target = "version", source = "version")
     TagDTO toDTO(Tag entity);
     
-    @Mapping(target = "id", ignore = true)
+    @InheritInverseConfiguration(name = "toDTO")
     @Mapping(target = "version", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
     Tag toEntity(TagDTO dto);
     
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "version", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
+    @InheritConfiguration(name = "toEntity")
     void updateEntityFromDTO(TagDTO dto, @MappingTarget Tag entity);
 } 

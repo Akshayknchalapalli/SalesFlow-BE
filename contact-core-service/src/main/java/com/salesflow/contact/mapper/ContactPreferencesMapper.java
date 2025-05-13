@@ -6,9 +6,12 @@ import com.salesflow.contact.domain.Contact.ContactMethod;
 import com.salesflow.contact.domain.Contact.ContactTime;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.ReportingPolicy;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.Named;
+import org.mapstruct.InheritInverseConfiguration;
+import org.mapstruct.InheritConfiguration;
 
 @Mapper(componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.IGNORE,
@@ -22,12 +25,13 @@ public interface ContactPreferencesMapper {
     @Mapping(target = "communicationLanguage", source = "communicationLanguage")
     ContactPreferencesDTO toDTO(ContactPreferences entity);
     
+    @InheritInverseConfiguration(name = "toDTO")
     @Mapping(target = "preferredContactMethod", source = "preferredContactMethod", qualifiedByName = "contactMethodToString")
     @Mapping(target = "preferredContactTime", source = "preferredContactTime", qualifiedByName = "contactTimeToString")
-    @Mapping(target = "doNotContact", source = "doNotContact")
-    @Mapping(target = "marketingOptIn", source = "marketingOptIn")
-    @Mapping(target = "communicationLanguage", source = "communicationLanguage")
     ContactPreferences toEntity(ContactPreferencesDTO dto);
+
+    @InheritConfiguration(name = "toEntity")
+    void updateEntityFromDTO(ContactPreferencesDTO dto, @MappingTarget ContactPreferences entity);
 
     @Named("stringToContactMethod")
     default ContactMethod stringToContactMethod(String value) {
