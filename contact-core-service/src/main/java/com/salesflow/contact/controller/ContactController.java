@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/contacts")
+@RequestMapping("api/v1/contacts")
 @RequiredArgsConstructor
 @Tag(name = "Contact Management", description = "APIs for managing contacts in the SalesFlow system")
 public class ContactController {
@@ -35,7 +35,7 @@ public class ContactController {
             ## Required Fields
             - firstName: First name of the contact
             - lastName: Last name of the contact
-            - stage: Contact stage (LEAD, PROSPECT, CUSTOMER, INACTIVE, PARTNER)
+            - stage: Contact stage (PROSPECT,LEAD, CUSTOMER, INACTIVE, PARTNER)
             - ownerId: ID of the contact owner
             
             ## Optional Fields
