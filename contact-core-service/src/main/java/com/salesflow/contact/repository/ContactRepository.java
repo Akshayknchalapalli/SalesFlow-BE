@@ -23,7 +23,8 @@ public interface ContactRepository extends JpaRepository<Contact, UUID> {
            "LOWER(c.firstName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
            "LOWER(c.lastName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
            "LOWER(c.email) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
-           "LOWER(c.companyName) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
+           "LOWER(c.companyName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+           "LOWER(c.phone) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
     Page<Contact> searchContacts(@Param("ownerId") String ownerId,
                                 @Param("searchTerm") String searchTerm,
                                 Pageable pageable);
