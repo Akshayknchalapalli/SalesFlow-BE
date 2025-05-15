@@ -1,2 +1,0 @@
--- This is an empty migration file that replaces the problematic V2 migration
--- The actual constraints will be added in a later migration after inspecting the database schema 
