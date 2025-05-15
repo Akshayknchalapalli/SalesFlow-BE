@@ -48,4 +48,27 @@ The Contact Core Service is a microservice responsible for managing contact info
 - Kafka (for event handling)
 
 ## License
-This project is licensed under the Apache License 2.0. See the LICENSE file for details. 
+This project is licensed under the Apache License 2.0. See the LICENSE file for details.
+
+## Environment Setup
+
+### Setting up Environment Variables
+
+For local development, create a `.env` file in the root of the `contact-core-service` directory with the following variables:
+
+```
+# Database Configuration (Required)
+SUPABASE_DATABASE_URL=jdbc:postgresql://db.rdczmzmusjfemlynaqdf.supabase.co:5432/postgres
+DATABASE_USERNAME=postgres
+DATABASE_PASSWORD=your_password_here
+
+# No need to specify AUTH_SERVICE_URL in the .env file
+# It's already configured with a default value of http://localhost:8081
+```
+
+Replace the placeholder values with your actual credentials.
+
+**Note:** 
+1. The `.env` file is included in `.gitignore` and should never be committed to version control.
+2. Only the database configuration variables are required in the `.env` file.
+3. The `AUTH_SERVICE_URL` is automatically set to `http://localhost:8081` in the launch configuration. 

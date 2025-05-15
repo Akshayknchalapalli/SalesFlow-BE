@@ -21,6 +21,7 @@ import com.salesflow.auth.repository.TokenRepository;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 
@@ -45,11 +46,11 @@ public class JwtService {
     }
 
     public Claims extractAllClaims(String token) {
-        return Jwts.parser()
-                .verifyWith(getSigningKey())
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
                 .build()
-                .parseSignedClaims(token)
-                .getPayload();
+                .parseClaimsJws(token)
+                .getBody();
     }
 
     public Authentication getAuthentication(String token) {
@@ -82,13 +83,11 @@ public class JwtService {
 
     private String generateToken(Map<String, Object> extraClaims, User user, long validityInMillis) {
         return Jwts.builder()
-                .claims()
-                .add(extraClaims)
-                .subject(user.getUsername())
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + validityInMillis))
-                .and()
-                .signWith(getSigningKey(), Jwts.SIG.HS256)
+                .setClaims(extraClaims)
+                .setSubject(user.getUsername())
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + validityInMillis))
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
@@ -121,5 +120,10 @@ public class JwtService {
             token.setRevoked(true);
             tokenRepository.save(token);
         }
+    }
+
+    public CustomUserDetails getUserDetailsFromToken(String token) {
+        String username = extractUsername(token);
+        return (CustomUserDetails) customUserDetailsService.loadUserByUsername(username);
     }
 } 

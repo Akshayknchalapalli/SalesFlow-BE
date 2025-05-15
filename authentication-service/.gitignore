@@ -1,0 +1,61 @@
+# Authentication Service specific .gitignore
+
+# Build artifacts
+/target/
+!/target/classes/
+!/target/dependencies/
+
+# Batch files
+*.bat
+*.sh
+*.ps1
+debug.bat
+run-debug.bat
+
+# IDE specific files for authentication service
+.settings/
+.factorypath
+.vscode/
+.classpath
+.project
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Logs
+/logs/
+*.log
+
+# Application properties specific to environments
+src/main/resources/application-local.yml
+src/main/resources/application-dev.yml
+src/main/resources/application-prod.yml
+
+# H2 database files
+*.db
+*.h2.db
+*.lock.db
+*.trace.db
+
+# Test artifacts
+/test-output/
+
+# Spring Boot DevTools
+.restart
+
+# Maven generated files specific to authentication service
+.mvn/wrapper/maven-wrapper.jar
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.bak
+
+# Generated documentation
+/javadoc/
+
+# Custom debug files
+debug*.json 

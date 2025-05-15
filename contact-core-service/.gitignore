@@ -1,1 +1,25 @@
- 
+# IDE files
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+
+# Compiled output
+/target/
+/build/
+*.class
+
+# Logs
+/logs/
+*.log
+
+# Environment variables
+.env
+.env.local
+.env.development
+
+# OS files
+.DS_Store
+Thumbs.db 

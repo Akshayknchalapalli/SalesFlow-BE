@@ -173,12 +173,12 @@ public class AuthController {
         }
 
         String jwt = token.substring(7);
-        if (!jwtService.validateToken(jwt)) {
-            throw new RuntimeException("Invalid token");
-        }
-
         String username = jwtService.extractUsername(jwt);
         CustomUserDetails userDetails = (CustomUserDetails) jwtService.getAuthentication(jwt).getPrincipal();
+        
+        if (!jwtService.validateToken(jwt, userDetails)) {
+            throw new RuntimeException("Invalid token");
+        }
 
         return ResponseEntity.ok(AuthResponse.builder()
                 .username(userDetails.getUsername())

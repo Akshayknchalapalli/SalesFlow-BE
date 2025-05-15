@@ -1,6 +1,7 @@
 package com.salesflow.auth.filter;
 
-import com.salesflow.auth.client.AuthServiceClient;
+import com.salesflow.auth.service.JwtService;
+import com.salesflow.auth.service.CustomUserDetails;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,7 +20,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class JwtValidationFilter extends OncePerRequestFilter {
 
-    private final AuthServiceClient authServiceClient;
+    private final JwtService jwtService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -32,18 +33,22 @@ public class JwtValidationFilter extends OncePerRequestFilter {
         }
 
         try {
-            var authResponse = authServiceClient.validateToken(authHeader);
-            var authorities = authResponse.getBody().getRoles().stream()
-                    .map(SimpleGrantedAuthority::new)
-                    .collect(Collectors.toList());
-
-            var authentication = new UsernamePasswordAuthenticationToken(
-                    authResponse.getBody().getUsername(),
-                    null,
-                    authorities
-            );
-
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String jwt = authHeader.substring(7);
+            String username = jwtService.extractUsername(jwt);
+            
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                var userDetails = jwtService.getUserDetailsFromToken(jwt);
+                
+                if (jwtService.validateToken(jwt, userDetails)) {
+                    var authentication = new UsernamePasswordAuthenticationToken(
+                            userDetails.getUsername(),
+                            null,
+                            userDetails.getAuthorities()
+                    );
+                    
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
+            }
         } catch (Exception e) {
             SecurityContextHolder.clearContext();
         }

@@ -1,6 +1,6 @@
 package com.salesflow.auth.service;
 
-import com.salesflow.auth.model.User;
+import com.salesflow.auth.domain.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,9 +18,13 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return user.getRoles().stream()
+        return user.getAuthorities().stream()
                 .map(role -> new SimpleGrantedAuthority(role.getName()))
                 .collect(Collectors.toList());
+    }
+    
+    public User getUser() {
+        return user;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.salesflow.auth.config;
 
 import com.salesflow.auth.service.JwtAuthenticationFilter;
+import com.salesflow.auth.service.JwtAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,6 +33,8 @@ public class JwtSecurityConfig {
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/auth/**", "/api-docs/**", "/swagger-ui/**").permitAll()
+                .requestMatchers("/auth/admin/**").hasRole("ADMIN")
+                .requestMatchers("/auth/tenant/**").hasRole("TENANT_ADMIN")
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session
