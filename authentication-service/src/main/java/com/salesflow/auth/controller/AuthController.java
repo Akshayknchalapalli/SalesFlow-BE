@@ -75,12 +75,7 @@ public class AuthController {
 
         userRepository.save(user);
 
-        String accessToken = jwtService.generateAccessToken(user);
-        String refreshToken = jwtService.generateRefreshToken(user);
-
         return ResponseEntity.ok(AuthResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .tenantId(user.getTenantId())
