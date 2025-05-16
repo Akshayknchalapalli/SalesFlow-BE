@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: ${SUPABASE_DATABASE_URL:jdbc:postgresql://db.rdczmzmusjfemlynaqdf.supabase.co:5432/postgres}
-    username: ${DATABASE_USERNAME:postgres}
-    password: ${DATABASE_PASSWORD:Icecoldkilla@123}
+    url: ${SUPABASE_DB_URL:jdbc:postgresql://db.lmahcgjravmjnpzxjslj.supabase.co:5432/postgres}
+    username: ${SUPABASE_DB_USERNAME:postgres}
+    password: ${SUPABASE_DB_PASSWORD:Icecoldkilla@123}
     driver-class-name: org.postgresql.Driver
     hikari:
       connection-timeout: 60000

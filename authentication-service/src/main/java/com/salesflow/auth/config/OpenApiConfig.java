@@ -28,7 +28,7 @@ public class OpenApiConfig {
                                 .url("http://www.apache.org/licenses/LICENSE-2.0.html")))
                 .servers(List.of(
                         new Server()
-                                .url("/api")
+                                .url("/")
                                 .description("Default Server URL")
                 ));
     }

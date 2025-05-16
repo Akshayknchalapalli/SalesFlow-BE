@@ -1,5 +1,6 @@
 package com.salesflow.auth.exception;
 
+import com.salesflow.auth.dto.ApiResponseWrapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -16,40 +17,35 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ApiResponseWrapper<Map<String, String>>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach((error) -> {
             String fieldName = ((FieldError) error).getField();
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
         });
-        return ResponseEntity.badRequest().body(errors);
+        return ResponseEntity.badRequest()
+                .body(ApiResponseWrapper.error("Validation failed: " + errors));
     }
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ErrorResponse> handleBadCredentialsException(BadCredentialsException ex) {
+    public ResponseEntity<ApiResponseWrapper<Void>> handleBadCredentialsException(BadCredentialsException ex) {
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
-                .body(new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), "Invalid credentials", ex.getMessage()));
+                .body(ApiResponseWrapper.error("Invalid credentials"));
     }
 
     @ExceptionHandler(UsernameNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleUsernameNotFoundException(UsernameNotFoundException ex) {
+    public ResponseEntity<ApiResponseWrapper<Void>> handleUsernameNotFoundException(UsernameNotFoundException ex) {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponse(HttpStatus.NOT_FOUND.value(), "User not found", ex.getMessage()));
+                .body(ApiResponseWrapper.error("User not found"));
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
+    public ResponseEntity<ApiResponseWrapper<Void>> handleGenericException(Exception ex) {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse(
-                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    "Internal server error",
-                    ex.getMessage()
-                ));
+                .body(ApiResponseWrapper.error("Internal server error: " + ex.getMessage()));
     }
-
-    private record ErrorResponse(int status, String error, String message) {}
 } 

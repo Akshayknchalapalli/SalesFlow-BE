@@ -32,9 +32,9 @@ public class JwtSecurityConfig {
             .exceptionHandling(exception -> exception
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/**", "/api-docs/**", "/swagger-ui/**").permitAll()
-                .requestMatchers("/auth/admin/**").hasRole("ADMIN")
-                .requestMatchers("/auth/tenant/**").hasRole("TENANT_ADMIN")
+                .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/refresh", "/api/auth/validate", "/api-docs/**", "/swagger-ui/**").permitAll()
+                .requestMatchers("/api/auth/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/auth/tenant/**").hasRole("TENANT_ADMIN")
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session

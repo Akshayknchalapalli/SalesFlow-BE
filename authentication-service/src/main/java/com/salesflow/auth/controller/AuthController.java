@@ -5,18 +5,13 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-
+import org.springframework.web.bind.annotation.*;
 import com.salesflow.auth.domain.Role;
 import com.salesflow.auth.domain.User;
 import com.salesflow.auth.dto.AuthRequest;
 import com.salesflow.auth.dto.AuthResponse;
 import com.salesflow.auth.dto.RegisterRequest;
+import com.salesflow.auth.dto.ApiResponseWrapper;
 import com.salesflow.auth.repository.RoleRepository;
 import com.salesflow.auth.repository.UserRepository;
 import com.salesflow.auth.service.CustomUserDetails;
@@ -32,7 +27,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @Tag(name = "Authentication", description = "Authentication management APIs")
 public class AuthController {
@@ -53,7 +48,7 @@ public class AuthController {
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<ApiResponseWrapper<AuthResponse>> register(@Valid @RequestBody RegisterRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new RuntimeException("Username already exists");
         }
@@ -75,14 +70,16 @@ public class AuthController {
 
         userRepository.save(user);
 
-        return ResponseEntity.ok(AuthResponse.builder()
+        AuthResponse authResponse = AuthResponse.builder()
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .tenantId(user.getTenantId())
                 .roles(user.getAuthorities().stream()
                         .map(role -> role.getAuthority())
                         .collect(java.util.stream.Collectors.toSet()))
-                .build());
+                .build();
+
+        return ResponseEntity.ok(ApiResponseWrapper.success("User registered successfully", authResponse));
     }
 
     @Operation(
@@ -96,7 +93,7 @@ public class AuthController {
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthRequest request) {
+    public ResponseEntity<ApiResponseWrapper<AuthResponse>> login(@Valid @RequestBody AuthRequest request) {
         Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
         );
@@ -105,7 +102,7 @@ public class AuthController {
         String accessToken = jwtService.generateAccessToken(userDetails.getUser());
         String refreshToken = jwtService.generateRefreshToken(userDetails.getUser());
 
-        return ResponseEntity.ok(AuthResponse.builder()
+        AuthResponse authResponse = AuthResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .username(userDetails.getUsername())
@@ -114,7 +111,9 @@ public class AuthController {
                 .roles(userDetails.getAuthorities().stream()
                         .map(authority -> authority.getAuthority())
                         .collect(java.util.stream.Collectors.toSet()))
-                .build());
+                .build();
+
+        return ResponseEntity.ok(ApiResponseWrapper.success("Login successful", authResponse));
     }
 
     @Operation(
@@ -128,7 +127,7 @@ public class AuthController {
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PostMapping("/refresh")
-    public ResponseEntity<AuthResponse> refreshToken(@Valid @RequestBody String refreshToken) {
+    public ResponseEntity<ApiResponseWrapper<AuthResponse>> refreshToken(@Valid @RequestBody String refreshToken) {
         if (!jwtService.validateRefreshToken(refreshToken)) {
             throw new RuntimeException("Invalid refresh token");
         }
@@ -139,7 +138,7 @@ public class AuthController {
         String newAccessToken = jwtService.generateAccessToken(userDetails.getUser());
         String newRefreshToken = jwtService.generateRefreshToken(userDetails.getUser());
 
-        return ResponseEntity.ok(AuthResponse.builder()
+        AuthResponse authResponse = AuthResponse.builder()
                 .accessToken(newAccessToken)
                 .refreshToken(newRefreshToken)
                 .username(userDetails.getUsername())
@@ -148,7 +147,9 @@ public class AuthController {
                 .roles(userDetails.getAuthorities().stream()
                         .map(authority -> authority.getAuthority())
                         .collect(java.util.stream.Collectors.toSet()))
-                .build());
+                .build();
+
+        return ResponseEntity.ok(ApiResponseWrapper.success("Token refreshed successfully", authResponse));
     }
 
     @Operation(
@@ -162,7 +163,8 @@ public class AuthController {
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/validate")
-    public ResponseEntity<AuthResponse> validateToken(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<ApiResponseWrapper<AuthResponse>> validateToken(@RequestHeader("Authorization") String token) {
+        System.out.println("Token: " + token);
         if (token == null || !token.startsWith("Bearer ")) {
             throw new RuntimeException("Invalid token format");
         }
@@ -175,13 +177,15 @@ public class AuthController {
             throw new RuntimeException("Invalid token");
         }
 
-        return ResponseEntity.ok(AuthResponse.builder()
+        AuthResponse authResponse = AuthResponse.builder()
                 .username(userDetails.getUsername())
                 .email(userDetails.getUser().getEmail())
                 .tenantId(userDetails.getTenantId())
                 .roles(userDetails.getAuthorities().stream()
                         .map(authority -> authority.getAuthority())
                         .collect(java.util.stream.Collectors.toSet()))
-                .build());
+                .build();
+
+        return ResponseEntity.ok(ApiResponseWrapper.success("Token is valid", authResponse));
     }
 } 
