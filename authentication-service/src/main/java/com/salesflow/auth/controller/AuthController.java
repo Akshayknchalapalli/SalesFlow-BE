@@ -23,6 +23,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -48,7 +49,9 @@ public class AuthController {
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PostMapping("/register")
-    public ResponseEntity<ApiResponseWrapper<AuthResponse>> register(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<ApiResponseWrapper<AuthResponse>> register(
+            @Valid @RequestBody RegisterRequest request,
+            @RequestHeader("X-Tenant-ID") String tenantId) {
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new RuntimeException("Username already exists");
         }
@@ -64,7 +67,7 @@ public class AuthController {
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setTenantId(request.getTenantId());
+        user.setTenantId(tenantId);
         user.setEnabled(true);
         user.getAuthorities().add(userRole);
 
@@ -93,12 +96,21 @@ public class AuthController {
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PostMapping("/login")
-    public ResponseEntity<ApiResponseWrapper<AuthResponse>> login(@Valid @RequestBody AuthRequest request) {
+    public ResponseEntity<ApiResponseWrapper<AuthResponse>> login(
+            @Valid @RequestBody AuthRequest request,
+            @RequestHeader("X-Tenant-ID") String tenantId) {
         Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
         );
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        
+        // Verify tenant ID matches
+        if (!userDetails.getTenantId().equals(tenantId)) {
+            return ResponseEntity.status(401)
+                .body(ApiResponseWrapper.error("Invalid tenant ID"));
+        }
+
         String accessToken = jwtService.generateAccessToken(userDetails.getUser());
         String refreshToken = jwtService.generateRefreshToken(userDetails.getUser());
 
@@ -128,8 +140,12 @@ public class AuthController {
     })
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponseWrapper<AuthResponse>> refreshToken(@Valid @RequestBody String refreshToken) {
+        // Remove any quotes from the refresh token if present
+        refreshToken = refreshToken.replaceAll("^\"|\"$", "");
+        
         if (!jwtService.validateRefreshToken(refreshToken)) {
-            throw new RuntimeException("Invalid refresh token");
+            return ResponseEntity.status(401)
+                .body(ApiResponseWrapper.error("Invalid refresh token"));
         }
 
         String username = jwtService.extractUsername(refreshToken);
@@ -154,7 +170,8 @@ public class AuthController {
 
     @Operation(
         summary = "Validate token",
-        description = "Validates a JWT token and returns user information"
+        description = "Validates a JWT token and returns user information",
+        security = @io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Token is valid",
@@ -163,29 +180,36 @@ public class AuthController {
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/validate")
-    public ResponseEntity<ApiResponseWrapper<AuthResponse>> validateToken(@RequestHeader("Authorization") String token) {
-        System.out.println("Token: " + token);
-        if (token == null || !token.startsWith("Bearer ")) {
-            throw new RuntimeException("Invalid token format");
+    public ResponseEntity<ApiResponseWrapper<AuthResponse>> validateToken(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(401)
+                .body(ApiResponseWrapper.error("Invalid token format. Token must start with 'Bearer '"));
         }
 
-        String jwt = token.substring(7);
-        String username = jwtService.extractUsername(jwt);
-        CustomUserDetails userDetails = (CustomUserDetails) jwtService.getAuthentication(jwt).getPrincipal();
-        
-        if (!jwtService.validateToken(jwt, userDetails)) {
-            throw new RuntimeException("Invalid token");
+        String jwt = authHeader.substring(7).trim();
+        try {
+            String username = jwtService.extractUsername(jwt);
+            CustomUserDetails userDetails = (CustomUserDetails) jwtService.getAuthentication(jwt).getPrincipal();
+            
+            if (!jwtService.validateToken(jwt, userDetails)) {
+                return ResponseEntity.status(401)
+                    .body(ApiResponseWrapper.error("Invalid or expired token"));
+            }
+
+            AuthResponse authResponse = AuthResponse.builder()
+                    .username(userDetails.getUsername())
+                    .email(userDetails.getUser().getEmail())
+                    .tenantId(userDetails.getTenantId())
+                    .roles(userDetails.getAuthorities().stream()
+                            .map(authority -> authority.getAuthority())
+                            .collect(java.util.stream.Collectors.toSet()))
+                    .build();
+
+            return ResponseEntity.ok(ApiResponseWrapper.success("Token is valid", authResponse));
+        } catch (Exception e) {
+            return ResponseEntity.status(401)
+                .body(ApiResponseWrapper.error("Invalid token: " + e.getMessage()));
         }
-
-        AuthResponse authResponse = AuthResponse.builder()
-                .username(userDetails.getUsername())
-                .email(userDetails.getUser().getEmail())
-                .tenantId(userDetails.getTenantId())
-                .roles(userDetails.getAuthorities().stream()
-                        .map(authority -> authority.getAuthority())
-                        .collect(java.util.stream.Collectors.toSet()))
-                .build();
-
-        return ResponseEntity.ok(ApiResponseWrapper.success("Token is valid", authResponse));
     }
 } 

@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  auth-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: auth-service
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SUPABASE_DB_URL=jdbc:postgresql://db.lmahcgjravmjnpzxjslj.supabase.co:5432/postgres
+      - SUPABASE_DB_USERNAME=postgres
+      - SUPABASE_DB_PASSWORD=Icecoldkilla@123
+      - JWT_SECRET_KEY=50e617183504456d656898939ecfa9eb5a1007518b9107c7f3c6126dbcf9d2c73c16c9dc92d6ff5a90c7853e8db38fe18d38accfbba7cff87dcfb195ee5850a2bb1a5067384cc053f5d3d10c5b41bb93b2d4acf08d3261b8ac9795300d05027fc773abd458415845e7bf72ba39291954ada18ed984218b20bd854601aa6bd975a20ad69e961f97cd32a12effb2cd094e59983cec46e2bacec7a2d9bfc9df988c7a039b6aacc2417bda0c88155bc94ea41bb48dd757ceade778ba705041c92c0349668d434e855667fcd5e037c89f10d14c9b997d2ee50841f4a8830e967e340f020ce75700ba5d15866d41024e2a133a9f04285ca17aaf0d6957a9356890595b
+      - LOGGING_LEVEL_COM_SALESFLOW_AUTH=DEBUG
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY=INFO
+    networks:
+      - salesflow-network
+    depends_on:
+      - eureka-server
+
+  eureka-server:
+    image: springcloud/eureka
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - salesflow-network
+
+networks:
+  salesflow-network:
+    driver: bridge 
