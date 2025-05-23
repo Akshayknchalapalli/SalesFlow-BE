@@ -34,6 +34,21 @@ spring:
     create-schemas: true
     validate-on-migrate: true
     out-of-order: false
+  # Email configuration
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:your-email@gmail.com}
+    password: ${MAIL_PASSWORD:your-app-password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
     
 server:
   port: 8081
@@ -49,6 +64,20 @@ jwt:
   secret-key: ${JWT_SECRET_KEY:50e617183504456d656898939ecfa9eb5a1007518b9107c7f3c6126dbcf9d2c73c16c9dc92d6ff5a90c7853e8db38fe18d38accfbba7cff87dcfb195ee5850a2bb1a5067384cc053f5d3d10c5b41bb93b2d4acf08d3261b8ac9795300d05027fc773abd458415845e7bf72ba39291954ada18ed984218b20bd854601aa6bd975a20ad69e961f97cd32a12effb2cd094e59983cec46e2bacec7a2d9bfc9df988c7a039b6aacc2417bda0c88155bc94ea41bb48dd757ceade778ba705041c92c0349668d434e855667fcd5e037c89f10d14c9b997d2ee50841f4a8830e967e340f020ce75700ba5d15866d41024e2a133a9f04285ca17aaf0d6957a9356890595b}
   access-token-validity-in-minutes: 30
   refresh-token-validity-in-days: 7
+
+
+# Twilio configuration for SMS and WhatsApp
+twilio:
+  account-sid: ${TWILIO_ACCOUNT_SID:}
+  auth-token: ${TWILIO_AUTH_TOKEN:}
+  phone-number: ${TWILIO_PHONE_NUMBER:}
+  whatsapp-number: ${TWILIO_WHATSAPP_NUMBER:}
+
+# OTP configuration
+app:
+  otp:
+    length: ${OTP_LENGTH:6}
+    expiry-minutes: ${OTP_EXPIRY_MINUTES:5}
 
 logging:
   level:
