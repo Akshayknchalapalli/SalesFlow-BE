@@ -1,36 +1,24 @@
 package com.salesflow.auth.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.validation.annotation.Validated;
 
-@Component
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
+import lombok.Data;
+
+@Data
+@Validated
+@Configuration
 @ConfigurationProperties(prefix = "jwt")
 public class JwtProperties {
+    @NotBlank(message = "JWT secret key must not be blank")
     private String secretKey;
+    
+    @Positive(message = "Access token validity must be positive")
     private long accessTokenValidityInMinutes = 30;
+    
+    @Positive(message = "Refresh token validity must be positive")
     private long refreshTokenValidityInDays = 7;
-
-    public String getSecretKey() {
-        return secretKey;
-    }
-
-    public void setSecretKey(String secretKey) {
-        this.secretKey = secretKey;
-    }
-
-    public long getAccessTokenValidityInMinutes() {
-        return accessTokenValidityInMinutes;
-    }
-
-    public void setAccessTokenValidityInMinutes(long accessTokenValidityInMinutes) {
-        this.accessTokenValidityInMinutes = accessTokenValidityInMinutes;
-    }
-
-    public long getRefreshTokenValidityInDays() {
-        return refreshTokenValidityInDays;
-    }
-
-    public void setRefreshTokenValidityInDays(long refreshTokenValidityInDays) {
-        this.refreshTokenValidityInDays = refreshTokenValidityInDays;
-    }
 } 

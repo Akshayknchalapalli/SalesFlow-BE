@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.salesflow.auth.dto.AuthResponse;
 import com.salesflow.auth.filter.JwtValidationFilter;
 import com.salesflow.auth.repository.TokenRepository;
+import com.salesflow.auth.service.CustomUserDetails;
 import com.salesflow.auth.service.CustomUserDetailsService;
 import com.salesflow.auth.service.JwtAuthenticationEntryPoint;
 import com.salesflow.auth.service.JwtAuthenticationFilter;
@@ -31,7 +32,10 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
-import java.util.Collections;
+import com.salesflow.auth.domain.User;
+import com.salesflow.auth.domain.Role;
+import java.util.HashSet;
+import java.util.Set;
 
 @Configuration
 @EnableWebSecurity
@@ -93,7 +97,29 @@ public class TestSecurityConfig {
     public CustomUserDetailsService customUserDetailsService(UserDetailsService userDetailsService) {
         CustomUserDetailsService mockService = Mockito.mock(CustomUserDetailsService.class);
         Mockito.when(mockService.loadUserByUsername(Mockito.anyString()))
-            .thenAnswer(invocation -> userDetailsService.loadUserByUsername(invocation.getArgument(0)));
+            .thenAnswer(invocation -> {
+                String username = invocation.getArgument(0);
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                
+                // Create a User entity from the UserDetails
+                User user = new User();
+                user.setUsername(userDetails.getUsername());
+                user.setPassword(userDetails.getPassword());
+                user.setEmail(username + "@test.com");
+                user.setTenantId("test-tenant");
+                user.setEnabled(userDetails.isEnabled());
+                
+                // Add roles
+                Set<Role> roles = new HashSet<>();
+                userDetails.getAuthorities().forEach(authority -> {
+                    Role role = new Role();
+                    role.setName(authority.getAuthority());
+                    roles.add(role);
+                });
+                user.setRoles(roles);
+                
+                return new CustomUserDetails(user);
+            });
         return mockService;
     }
     
@@ -103,6 +129,8 @@ public class TestSecurityConfig {
         JwtService mockService = Mockito.mock(JwtService.class);
         Mockito.when(mockService.extractUsername(Mockito.anyString())).thenReturn("testuser");
         Mockito.when(mockService.validateToken(Mockito.anyString(), Mockito.any(UserDetails.class))).thenReturn(true);
+        Mockito.when(mockService.getUserDetailsFromToken(Mockito.anyString()))
+            .thenAnswer(invocation -> userDetailsService.loadUserByUsername("testuser"));
         return mockService;
     }
     
