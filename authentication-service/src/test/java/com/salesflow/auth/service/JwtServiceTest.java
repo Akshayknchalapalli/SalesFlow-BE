@@ -58,17 +58,17 @@ class JwtServiceTest {
     @Test
     void generateAccessToken_ShouldCreateValidToken() {
         // When
-        String token = jwtService.generateAccessToken(testUser);
+        String token = jwtService.generateAccessToken(testUserDetails);
 
         // Then
         assertNotNull(token);
-        assertTrue(jwtService.validateToken(token, testUser));
+        assertTrue(jwtService.validateToken(token, testUserDetails));
     }
 
     @Test
     void generateRefreshToken_ShouldCreateValidToken() {
         // When
-        String refreshToken = jwtService.generateRefreshToken(testUser);
+        String refreshToken = jwtService.generateRefreshToken(testUserDetails);
 
         // Then
         assertNotNull(refreshToken);
@@ -78,10 +78,10 @@ class JwtServiceTest {
     @Test
     void validateToken_WithValidToken_ShouldReturnTrue() {
         // Given
-        String token = jwtService.generateAccessToken(testUser);
+        String token = jwtService.generateAccessToken(testUserDetails);
 
         // When
-        boolean isValid = jwtService.validateToken(token, testUser);
+        boolean isValid = jwtService.validateToken(token, testUserDetails);
 
         // Then
         assertTrue(isValid);
@@ -90,7 +90,7 @@ class JwtServiceTest {
     @Test
     void validateRefreshToken_WithValidToken_ShouldReturnTrue() {
         // Given
-        String refreshToken = jwtService.generateRefreshToken(testUser);
+        String refreshToken = jwtService.generateRefreshToken(testUserDetails);
         Token token = new Token();
         token.setRefreshToken(refreshToken);
         token.setRevoked(false);
@@ -123,7 +123,7 @@ class JwtServiceTest {
     @Test
     void getUserDetailsFromToken_ShouldReturnUserDetails() {
         // Given
-        String token = jwtService.generateAccessToken(testUser);
+        String token = jwtService.generateAccessToken(testUserDetails);
         when(userDetailsService.loadUserByUsername(testUser.getUsername())).thenReturn(testUserDetails);
 
         // When
