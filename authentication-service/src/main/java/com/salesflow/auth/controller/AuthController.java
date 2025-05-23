@@ -4,6 +4,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import com.salesflow.auth.domain.Role;
@@ -69,7 +70,7 @@ public class AuthController {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setTenantId(tenantId);
         user.setEnabled(true);
-        user.getAuthorities().add(userRole);
+        user.getRoles().add(userRole);
 
         userRepository.save(user);
 
@@ -78,7 +79,7 @@ public class AuthController {
                 .email(user.getEmail())
                 .tenantId(user.getTenantId())
                 .roles(user.getAuthorities().stream()
-                        .map(role -> role.getAuthority())
+                        .map(GrantedAuthority::getAuthority)
                         .collect(java.util.stream.Collectors.toSet()))
                 .build();
 
@@ -106,22 +107,22 @@ public class AuthController {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         
         // Verify tenant ID matches
-        if (!userDetails.getTenantId().equals(tenantId)) {
+        if (!userDetails.getUser().getTenantId().equals(tenantId)) {
             return ResponseEntity.status(401)
                 .body(ApiResponseWrapper.error("Invalid tenant ID"));
         }
 
-        String accessToken = jwtService.generateAccessToken(userDetails.getUser());
-        String refreshToken = jwtService.generateRefreshToken(userDetails.getUser());
+        String accessToken = jwtService.generateAccessToken(userDetails);
+        String refreshToken = jwtService.generateRefreshToken(userDetails);
 
         AuthResponse authResponse = AuthResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .username(userDetails.getUsername())
                 .email(userDetails.getUser().getEmail())
-                .tenantId(userDetails.getTenantId())
+                .tenantId(userDetails.getUser().getTenantId())
                 .roles(userDetails.getAuthorities().stream()
-                        .map(authority -> authority.getAuthority())
+                        .map(GrantedAuthority::getAuthority)
                         .collect(java.util.stream.Collectors.toSet()))
                 .build();
 
@@ -151,17 +152,17 @@ public class AuthController {
         String username = jwtService.extractUsername(refreshToken);
         CustomUserDetails userDetails = (CustomUserDetails) jwtService.getAuthentication(refreshToken).getPrincipal();
         
-        String newAccessToken = jwtService.generateAccessToken(userDetails.getUser());
-        String newRefreshToken = jwtService.generateRefreshToken(userDetails.getUser());
+        String newAccessToken = jwtService.generateAccessToken(userDetails);
+        String newRefreshToken = jwtService.generateRefreshToken(userDetails);
 
         AuthResponse authResponse = AuthResponse.builder()
                 .accessToken(newAccessToken)
                 .refreshToken(newRefreshToken)
                 .username(userDetails.getUsername())
                 .email(userDetails.getUser().getEmail())
-                .tenantId(userDetails.getTenantId())
+                .tenantId(userDetails.getUser().getTenantId())
                 .roles(userDetails.getAuthorities().stream()
-                        .map(authority -> authority.getAuthority())
+                        .map(GrantedAuthority::getAuthority)
                         .collect(java.util.stream.Collectors.toSet()))
                 .build();
 
@@ -200,9 +201,9 @@ public class AuthController {
             AuthResponse authResponse = AuthResponse.builder()
                     .username(userDetails.getUsername())
                     .email(userDetails.getUser().getEmail())
-                    .tenantId(userDetails.getTenantId())
+                    .tenantId(userDetails.getUser().getTenantId())
                     .roles(userDetails.getAuthorities().stream()
-                            .map(authority -> authority.getAuthority())
+                            .map(GrantedAuthority::getAuthority)
                             .collect(java.util.stream.Collectors.toSet()))
                     .build();
 

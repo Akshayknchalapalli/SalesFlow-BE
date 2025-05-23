@@ -1,5 +1,7 @@
 package com.salesflow.auth.domain;
 
+import org.springframework.security.core.GrantedAuthority;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -15,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Role {
+public class Role implements GrantedAuthority {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -23,6 +25,7 @@ public class Role {
     @Column(unique = true, nullable = false)
     private String name;
 
+    @Override
     public String getAuthority() {
         return name;
     }

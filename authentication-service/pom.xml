@@ -124,6 +124,21 @@
       <artifactId>spring-security-test</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   
   <dependencyManagement>
@@ -158,9 +173,9 @@
         <version>9.21.1</version>
         <configuration>
           <driver>org.postgresql.Driver</driver>
-          <url>jdbc:postgresql://db.rdczmzmusjfemlynaqdf.supabase.co:5432/postgres</url>
-          <user>postgres</user>
-          <password>Icecoldkilla@123</password>
+          <url>${env.DB_URL}</url>
+          <user>${env.DB_USERNAME}</user>
+          <password>${env.DB_PASSWORD}</password>
           <schemas>public</schemas>
           <baselineOnMigrate>true</baselineOnMigrate>
           <createSchemas>true</createSchemas>

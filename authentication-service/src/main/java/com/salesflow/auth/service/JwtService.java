@@ -59,20 +59,20 @@ public class JwtService {
         return new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
     }
 
-    public String generateAccessToken(User user) {
+    public String generateAccessToken(CustomUserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("tenantId", user.getTenantId());
-        claims.put("roles", user.getAuthorities());
-        return generateToken(claims, user, jwtProperties.getAccessTokenValidityInMinutes() * 60 * 1000);
+        claims.put("tenantId", userDetails.getTenantId());
+        claims.put("roles", userDetails.getAuthorities());
+        return generateToken(claims, userDetails.getUser(), jwtProperties.getAccessTokenValidityInMinutes() * 60 * 1000);
     }
 
-    public String generateRefreshToken(User user) {
-        String refreshToken = generateToken(new HashMap<>(), user, 
+    public String generateRefreshToken(CustomUserDetails userDetails) {
+        String refreshToken = generateToken(new HashMap<>(), userDetails.getUser(), 
             jwtProperties.getRefreshTokenValidityInDays() * 24 * 60 * 60 * 1000);
         
         Token token = Token.builder()
                 .refreshToken(refreshToken)
-                .user(user)
+                .user(userDetails.getUser())
                 .expiryDate(Instant.now().plusSeconds(jwtProperties.getRefreshTokenValidityInDays() * 24 * 60 * 60))
                 .revoked(false)
                 .build();

@@ -1,21 +1,13 @@
-# Use OpenJDK 17 as the base image
-FROM openjdk:17-jdk-slim
-
-# Set the working directory
+# Build stage
+FROM maven:3.8.5-openjdk-17-slim AS build
 WORKDIR /app
+COPY . .
+RUN chmod +x mvnw
+RUN mvn clean package -DskipTests
 
-# Copy the Maven wrapper and pom.xml
-COPY .mvn/ .mvn
-COPY mvnw pom.xml ./
-
-# Copy the source code
-COPY src ./src
-
-# Build the application
-RUN ./mvnw clean package -DskipTests
-
-# Expose the port the app runs on
+# Run stage
+FROM openjdk:17-jdk-slim
+WORKDIR /app
+COPY --from=build /app/target/authentication-service-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8081
-
-# Run the application
-ENTRYPOINT ["java", "-jar", "target/authentication-service-0.0.1-SNAPSHOT.jar"] 
+ENTRYPOINT ["java", "-jar", "app.jar"] 
