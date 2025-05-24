@@ -29,9 +29,6 @@ run-debug.bat
 *.log
 
 # Application properties specific to environments
-src/main/resources/application-local.yml
-src/main/resources/application-dev.yml
-src/main/resources/application-prod.yml
 
 # H2 database files
 *.db
@@ -58,4 +55,4 @@ src/main/resources/application-prod.yml
 /javadoc/
 
 # Custom debug files
-debug*.json 
+debug*.json
