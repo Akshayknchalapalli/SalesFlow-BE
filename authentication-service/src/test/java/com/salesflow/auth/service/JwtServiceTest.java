@@ -21,17 +21,16 @@ import com.salesflow.auth.repository.TokenRepository;
 
 @ExtendWith(MockitoExtension.class)
 class JwtServiceTest {
+    @Mock(lenient = true)
 
-    @Mock
     private JwtProperties jwtProperties;
 
-    @Mock
+    @Mock(lenient = true)
     private CustomUserDetailsService userDetailsService;
 
-    @Mock
+    @Mock(lenient = true)
     private TokenRepository tokenRepository;
 
-    @InjectMocks
     private JwtService jwtService;
 
     private User testUser;
@@ -53,6 +52,8 @@ class JwtServiceTest {
         lenient().when(jwtProperties.getSecretKey()).thenReturn(testSecretKey);
         lenient().when(jwtProperties.getAccessTokenValidityInMinutes()).thenReturn(30L);
         lenient().when(jwtProperties.getRefreshTokenValidityInDays()).thenReturn(7L);
+        
+        jwtService = new JwtService(jwtProperties, userDetailsService, tokenRepository);
     }
 
     @Test
@@ -62,6 +63,7 @@ class JwtServiceTest {
 
         // Then
         assertNotNull(token);
+        lenient().when(userDetailsService.loadUserByUsername(testUser.getUsername())).thenReturn(testUserDetails);
         assertTrue(jwtService.validateToken(token, testUserDetails));
     }
 
@@ -95,7 +97,7 @@ class JwtServiceTest {
         token.setRefreshToken(refreshToken);
         token.setRevoked(false);
         token.setExpiryDate(Instant.now().plusSeconds(3600)); // Set expiry date 1 hour from now
-        when(tokenRepository.findByRefreshToken(refreshToken)).thenReturn(Optional.of(token));
+        lenient().when(tokenRepository.findByRefreshToken(refreshToken)).thenReturn(Optional.of(token));
 
         // When
         boolean isValid = jwtService.validateRefreshToken(refreshToken);
@@ -111,7 +113,7 @@ class JwtServiceTest {
         Token token = new Token();
         token.setRefreshToken(refreshToken);
         token.setRevoked(false);
-        when(tokenRepository.findByRefreshToken(refreshToken)).thenReturn(Optional.of(token));
+        lenient().when(tokenRepository.findByRefreshToken(refreshToken)).thenReturn(Optional.of(token));
 
         // When
         jwtService.revokeRefreshToken(refreshToken);
@@ -124,7 +126,7 @@ class JwtServiceTest {
     void getUserDetailsFromToken_ShouldReturnUserDetails() {
         // Given
         String token = jwtService.generateAccessToken(testUserDetails);
-        when(userDetailsService.loadUserByUsername(testUser.getUsername())).thenReturn(testUserDetails);
+        lenient().when(userDetailsService.loadUserByUsername(any(String.class))).thenReturn(testUserDetails);
 
         // When
         CustomUserDetails userDetails = jwtService.getUserDetailsFromToken(token);

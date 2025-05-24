@@ -11,26 +11,25 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.test.context.ActiveProfiles;
 
 import com.salesflow.auth.domain.User;
 import com.salesflow.auth.repository.UserRepository;
 
 @ExtendWith(MockitoExtension.class)
-@SpringBootTest
-@ActiveProfiles("test")
 class CustomUserDetailsServiceTest {
 
-    @Autowired
+    @Mock
+    private UserRepository userRepository;
+    
+    @InjectMocks
     private CustomUserDetailsService userDetailsService;
 
-    @MockBean
-    private UserRepository userRepository;
+    @BeforeEach
+    void setUp() {
+        // Any setup needed before each test
+    }
 
     @Test
     void loadUserByUsername_WhenUserExists_ShouldReturnUserDetails() {
@@ -38,6 +37,8 @@ class CustomUserDetailsServiceTest {
                 .username("testuser")
                 .password("encoded-pw")
                 .email("test@example.com")
+                .tenantId("test-tenant")
+                .enabled(true)
                 .build();
         
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(mockUser));
