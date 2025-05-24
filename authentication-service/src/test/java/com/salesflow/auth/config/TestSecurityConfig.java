@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.salesflow.auth.dto.AuthResponse;
 import com.salesflow.auth.filter.JwtValidationFilter;
 import com.salesflow.auth.repository.TokenRepository;
+import com.salesflow.auth.repository.UserRepository;
 import com.salesflow.auth.service.CustomUserDetails;
 import com.salesflow.auth.service.CustomUserDetailsService;
 import com.salesflow.auth.service.JwtAuthenticationEntryPoint;
@@ -35,17 +36,33 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import com.salesflow.auth.domain.User;
 import com.salesflow.auth.domain.Role;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
+
 @Configuration
-@EnableWebSecurity
-@EnableMethodSecurity
 @Profile("test")
 public class TestSecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+    
+    @Bean
+    @Primary
+    public UserRepository userRepository() {
+        User mockUser = User.builder()
+                .username("testuser")
+                .password(passwordEncoder().encode("password"))
+                .email("test@example.com")
+                .tenantId("test-tenant")
+                .enabled(true)
+                .build();
+        
+        UserRepository mockRepo = Mockito.mock(UserRepository.class);
+        Mockito.when(mockRepo.findByUsername("testuser")).thenReturn(Optional.of(mockUser));
+        return mockRepo;
     }
     
     @Bean
@@ -62,109 +79,22 @@ public class TestSecurityConfig {
         return manager;
     }
     
-    @Bean
-    public AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService);
-        provider.setPasswordEncoder(passwordEncoder);
-        return provider;
-    }
-    
-    @Bean
-    public AuthenticationManager authenticationManager(HttpSecurity http, AuthenticationProvider authenticationProvider) throws Exception {
-        return http.getSharedObject(AuthenticationManagerBuilder.class)
-            .authenticationProvider(authenticationProvider)
-            .build();
-    }
-    
-    @Bean
-    public JwtProperties jwtProperties() {
-        JwtProperties props = new JwtProperties();
-        props.setSecretKey("test-secret-key-for-unit-tests-not-for-production-use");
-        props.setAccessTokenValidityInMinutes(30);
-        props.setRefreshTokenValidityInDays(7);
-        return props;
-    }
     
     @Bean
     @Primary
-    public TokenRepository tokenRepository() {
-        return Mockito.mock(TokenRepository.class);
-    }
-    
-    @Bean
-    @Primary
-    public CustomUserDetailsService customUserDetailsService(UserDetailsService userDetailsService) {
-        CustomUserDetailsService mockService = Mockito.mock(CustomUserDetailsService.class);
-        Mockito.when(mockService.loadUserByUsername(Mockito.anyString()))
-            .thenAnswer(invocation -> {
-                String username = invocation.getArgument(0);
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                
-                // Create a User entity from the UserDetails
-                User user = new User();
-                user.setUsername(userDetails.getUsername());
-                user.setPassword(userDetails.getPassword());
-                user.setEmail(username + "@test.com");
-                user.setTenantId("test-tenant");
-                user.setEnabled(userDetails.isEnabled());
-                
-                // Add roles
-                Set<Role> roles = new HashSet<>();
-                userDetails.getAuthorities().forEach(authority -> {
-                    Role role = new Role();
-                    role.setName(authority.getAuthority());
-                    roles.add(role);
-                });
-                user.setRoles(roles);
-                
-                return new CustomUserDetails(user);
-            });
-        return mockService;
-    }
-    
-    @Bean
-    @Primary
-    public JwtService jwtService(JwtProperties jwtProperties, CustomUserDetailsService userDetailsService, TokenRepository tokenRepository) {
+    public JwtService jwtService() {
         JwtService mockService = Mockito.mock(JwtService.class);
-        Mockito.when(mockService.extractUsername(Mockito.anyString())).thenReturn("testuser");
-        Mockito.when(mockService.validateToken(Mockito.anyString(), Mockito.any(UserDetails.class))).thenReturn(true);
-        Mockito.when(mockService.getUserDetailsFromToken(Mockito.anyString()))
-            .thenAnswer(invocation -> userDetailsService.loadUserByUsername("testuser"));
+        Mockito.when(mockService.validateToken(Mockito.anyString(), Mockito.any()))
+               .thenReturn(true);
         return mockService;
     }
     
-    @Bean
-    @Primary
-    public ObjectMapper objectMapper() {
-        return new ObjectMapper();
-    }
-    
-    @Bean 
-    @Primary
-    public JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint(ObjectMapper objectMapper) {
-        return new JwtAuthenticationEntryPoint(objectMapper);
-    }
-    
-    @Bean
-    @Primary
-    public JwtAuthenticationFilter jwtAuthenticationFilter(JwtService jwtService, CustomUserDetailsService userDetailsService) {
-        return new JwtAuthenticationFilter(jwtService, userDetailsService);
-    }
-    
-    @Bean
-    @Primary
-    public JwtValidationFilter jwtValidationFilter(JwtService jwtService) {
-        return new JwtValidationFilter(jwtService);
-    }
     
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthFilter, JwtAuthenticationEntryPoint entryPoint) throws Exception {
         http.csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(new AntPathRequestMatcher("/api/test/public")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/api/test/admin")).hasRole("ADMIN")
-                .requestMatchers(new AntPathRequestMatcher("/api/test/user")).hasRole("USER")
+                .requestMatchers(new AntPathRequestMatcher("/api/auth/**")).permitAll()
                 .anyRequest().authenticated())
             .exceptionHandling(except -> except.authenticationEntryPoint(entryPoint))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

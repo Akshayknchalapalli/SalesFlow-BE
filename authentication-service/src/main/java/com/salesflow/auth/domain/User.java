@@ -18,15 +18,21 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
-@Table(name = "users")
+@Table(name = "users", schema="authentication")
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class User implements UserDetails {
+@EqualsAndHashCode(callSuper = true) // Includes superclass fields in equals and hashCode
+@ToString(callSuper = true)
+public class User extends BaseEntity implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

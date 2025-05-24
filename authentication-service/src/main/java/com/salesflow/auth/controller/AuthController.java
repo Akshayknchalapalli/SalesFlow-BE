@@ -88,7 +88,7 @@ public class AuthController {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setTenantId(request.getTenantId());
         user.setEnabled(true);
-        user.getAuthorities().add(role);
+        user.getRoles().add(role);
 
         userRepository.save(user);
 
@@ -97,7 +97,7 @@ public class AuthController {
                 .email(user.getEmail())
                 .tenantId(user.getTenantId())
                 .roles(user.getAuthorities().stream()
-                        .map(role -> role.getAuthority())
+                        .map(authority -> authority.getAuthority())
                         .collect(java.util.stream.Collectors.toSet()))
                 .build();
 
@@ -121,8 +121,8 @@ public class AuthController {
         );
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        String accessToken = jwtService.generateAccessToken(userDetails.getUser());
-        String refreshToken = jwtService.generateRefreshToken(userDetails.getUser());
+        String accessToken = jwtService.generateAccessToken(userDetails);
+        String refreshToken = jwtService.generateRefreshToken(userDetails);
 
         AuthResponse authResponse = AuthResponse.builder()
                 .accessToken(accessToken)
@@ -157,8 +157,8 @@ public class AuthController {
         String username = jwtService.extractUsername(refreshToken);
         CustomUserDetails userDetails = (CustomUserDetails) jwtService.getAuthentication(refreshToken).getPrincipal();
         
-        String newAccessToken = jwtService.generateAccessToken(userDetails.getUser());
-        String newRefreshToken = jwtService.generateRefreshToken(userDetails.getUser());
+        String newAccessToken = jwtService.generateAccessToken(userDetails);
+        String newRefreshToken = jwtService.generateRefreshToken(userDetails);
 
         AuthResponse authResponse = AuthResponse.builder()
                 .accessToken(newAccessToken)
@@ -295,8 +295,8 @@ public class AuthController {
         // Authentication logic similar to regular login would go here
         CustomUserDetails userDetails = new CustomUserDetails(user);
         
-        String accessToken = jwtService.generateAccessToken(user);
-        String refreshToken = jwtService.generateRefreshToken(user);
+        String accessToken = jwtService.generateAccessToken(userDetails);
+        String refreshToken = jwtService.generateRefreshToken(userDetails);
 
         AuthResponse authResponse = AuthResponse.builder()
                 .accessToken(accessToken)

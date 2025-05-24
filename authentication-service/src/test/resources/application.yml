@@ -1,22 +1,28 @@
 spring:
+  main:
+    allow-bean-definition-overriding: true
   application:
     name: auth-service
   datasource:
-    url: jdbc:h2:mem:auth_test_db
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
     username: sa
     password: 
     driver-class-name: org.h2.Driver
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
-        format_sql: true
-    show-sql: true
+
   h2:
     console:
       enabled: true
+
+  flyway:
+    clean-on-validation-error: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+    enabled: true
+    clean-disabled: false  # Fixed indentation and spacing
+
+  jpa:
+    hibernate:
+      ddl-auto: none  # Fixed indentation
 
 server:
   port: 0
@@ -24,4 +30,4 @@ server:
 jwt:
   secret-key: test-secret-key-for-unit-testing-purposes-only-not-for-production-use
   access-token-validity-in-minutes: 5
-  refresh-token-validity-in-days: 1 
+  refresh-token-validity-in-days: 1

@@ -15,7 +15,6 @@ public class RegisterRequest {
 
     @NotBlank(message = "Password is required")
     private String password;
-<<<<<<< HEAD
     
     @NotBlank(message = "Confirm password is required")
     private String confirmPassword;
@@ -24,6 +23,4 @@ public class RegisterRequest {
     private String tenantId;
     
     private String requestedRole;
-=======
->>>>>>> ac09314fe08bb248e4bc5959336948d20a0366b4
 } 
