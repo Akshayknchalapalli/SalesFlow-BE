@@ -32,6 +32,17 @@ server:
   port: 0
 
 jwt:
-  secret-key: test-secret-key-for-unit-testing-purposes-only-not-for-production-use
+  secret-key: test-secret-key-for-unit-testing-purposes-only-not-for-production-use-012345678901234567890123456789
   access-token-validity-in-minutes: 5
   refresh-token-validity-in-days: 1
+
+app:
+  otp:
+    length: 6
+    expiry-minutes: 5
+    
+twilio:
+  account-sid: test-account-sid
+  auth-token: test-auth-token
+  phone-number: +1234567890
+  whatsapp-number: whatsapp:+1234567890

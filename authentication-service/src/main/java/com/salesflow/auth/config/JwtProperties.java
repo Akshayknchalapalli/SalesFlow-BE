@@ -14,7 +14,7 @@ import lombok.Data;
 @ConfigurationProperties(prefix = "jwt")
 public class JwtProperties {
     @NotBlank(message = "JWT secret key must not be blank")
-    private String secretKey;
+    private String secretKey = "default-dev-secret-key-for-jwt-authentication-do-not-use-in-production";
     
     @Positive(message = "Access token validity must be positive")
     private long accessTokenValidityInMinutes = 30;
