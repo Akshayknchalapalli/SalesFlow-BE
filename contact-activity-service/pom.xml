@@ -5,13 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.3</version>
-        <relativePath/>
+        <groupId>com.salesflow</groupId>
+        <artifactId>salesflow-parent</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>com.salesflow</groupId>
     <artifactId>contact-activity-service</artifactId>
     <version>1.0.0</version>
     <name>Contact Activity Service</name>
@@ -118,7 +117,6 @@
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>${springdoc.version}</version>
         </dependency>
     </dependencies>
 
