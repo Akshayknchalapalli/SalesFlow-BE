@@ -1,0 +1,78 @@
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        connection.timeout: 30000
+        default_schema: authentication
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+    schemas: authentication
+    create-schemas: true
+    validate-on-migrate: true
+    out-of-order: false
+
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties.mail.smtp:
+      auth: true
+      starttls.enable: true
+      connectiontimeout: 5000
+      timeout: 5000
+      writetimeout: 5000
+
+server:
+  port: 8081
+  servlet:
+    context-path: /
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+jwt:
+  secret-key: ${JWT_SECRET_KEY}
+  access-token-validity-in-minutes: ${ACCESS_TOKEN_VALIDITY}
+  refresh-token-validity-in-days: ${REFRESH_TOKEN_VALIDITY}
+
+twilio:
+  account-sid: ${TWILIO_ACCOUNT_SID}
+  auth-token: ${TWILIO_AUTH_TOKEN}
+  phone-number: ${TWILIO_PHONE_NUMBER}
+  whatsapp-number: ${TWILIO_WHATSAPP_NUMBER}
+
+app:
+  otp:
+    length: ${OTP_LENGTH}
+    expiry-minutes: ${OTP_EXPIRY_MINUTES}
+
+logging:
+  level:
+    com.salesflow.auth: ${LOGGING_LEVEL_COM_SALESFLOW_AUTH}
+    org.springframework.security: ${LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY}
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
