@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,7 +38,7 @@ class CustomUserDetailsServiceTest {
                 .username("testuser")
                 .password("encoded-pw")
                 .email("test@example.com")
-                .tenantId("test-tenant")
+                .tenantId(UUID.randomUUID())
                 .enabled(true)
                 .build();
         
@@ -55,5 +56,19 @@ class CustomUserDetailsServiceTest {
         assertThrows(UsernameNotFoundException.class, () -> 
             userDetailsService.loadUserByUsername("missing")
         );
+    }
+
+    @Test
+    void loadUserByUsername_WhenUserExists_ReturnsUserDetails() {
+        // Arrange
+        String email = "test@example.com";
+        UUID tenantId = UUID.randomUUID();
+        User user = User.builder()
+                .id(UUID.randomUUID())
+                .email(email)
+                .password("password")
+                .tenantId(tenantId)
+                .build();
+        // ... existing code ...
     }
 }

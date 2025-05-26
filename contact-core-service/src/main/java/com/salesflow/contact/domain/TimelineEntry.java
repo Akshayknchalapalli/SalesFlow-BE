@@ -10,7 +10,7 @@ import org.hibernate.annotations.GenericGenerator;
 import java.util.UUID;
 
 @Entity
-@Table(name = "timeline_entries")
+@Table(name = "timeline_entries", schema = "contact_data")
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
@@ -28,26 +28,33 @@ public class TimelineEntry extends BaseEntity {
     @JoinColumn(name = "contact_id", nullable = false)
     private Contact contact;
     
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private EntryType type;
+    
     @Column(nullable = false)
     private String title;
     
     @Column(columnDefinition = "TEXT")
     private String description;
     
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private EntryType type;
+    @Column(name = "owner_id", nullable = false)
+    private String ownerId;
     
     @Version
     private Long version;
     
     public enum EntryType {
         CONTACT_CREATED,
+        CONTACT_UPDATED,
+        CONTACT_DELETED,
         STAGE_CHANGED,
-        ACTIVITY_LOGGED,
-        NOTE_ADDED,
         TAG_ADDED,
         TAG_REMOVED,
+        NOTE_ADDED,
+        NOTE_UPDATED,
+        NOTE_DELETED,
+        ACTIVITY_LOGGED,
         OWNERSHIP_CHANGED
     }
 } 

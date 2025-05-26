@@ -4,7 +4,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UserDetails;
+import io.jsonwebtoken.Claims;
 
 import com.salesflow.auth.config.JwtProperties;
 import com.salesflow.auth.domain.Token;
@@ -40,11 +43,11 @@ class JwtServiceTest {
     @BeforeEach
     void setUp() {
         testUser = new User();
-        testUser.setId(1L);
+        testUser.setId(UUID.randomUUID());
         testUser.setUsername("testuser");
         testUser.setEmail("test@example.com");
         testUser.setPassword("password");
-        testUser.setTenantId("tenant1");
+        testUser.setTenantId(UUID.randomUUID());
         testUser.setEnabled(true);
 
         testUserDetails = new CustomUserDetails(testUser);
@@ -58,12 +61,17 @@ class JwtServiceTest {
 
     @Test
     void generateAccessToken_ShouldCreateValidToken() {
+        // Set up the mock before generating the token
+        when(userDetailsService.loadUserByUsername(testUser.getUsername())).thenReturn(testUserDetails);
+
         // When
         String token = jwtService.generateAccessToken(testUserDetails);
 
         // Then
         assertNotNull(token);
-        lenient().when(userDetailsService.loadUserByUsername(testUser.getUsername())).thenReturn(testUserDetails);
+        // Extract claims to verify tenant ID
+        Claims claims = jwtService.extractAllClaims(token);
+        assertEquals(testUser.getTenantId().toString(), claims.get("tenantId", String.class));
         assertTrue(jwtService.validateToken(token, testUserDetails));
     }
 
@@ -79,6 +87,9 @@ class JwtServiceTest {
 
     @Test
     void validateToken_WithValidToken_ShouldReturnTrue() {
+        // Set up the mock before generating the token
+        when(userDetailsService.loadUserByUsername(testUser.getUsername())).thenReturn(testUserDetails);
+
         // Given
         String token = jwtService.generateAccessToken(testUserDetails);
 
@@ -87,6 +98,9 @@ class JwtServiceTest {
 
         // Then
         assertTrue(isValid);
+        // Verify tenant ID in claims
+        Claims claims = jwtService.extractAllClaims(token);
+        assertEquals(testUser.getTenantId().toString(), claims.get("tenantId", String.class));
     }
 
     @Test
@@ -134,5 +148,19 @@ class JwtServiceTest {
         // Then
         assertNotNull(userDetails);
         assertEquals(testUser.getUsername(), userDetails.getUsername());
+    }
+
+    @Test
+    void generateToken_ShouldGenerateValidToken() {
+        // Arrange
+        String email = "test@example.com";
+        UUID userId = UUID.randomUUID();
+        UUID tenantId = UUID.randomUUID();
+        UserDetails userDetails = new org.springframework.security.core.userdetails.User(
+                email,
+                "password",
+                Collections.emptyList()
+        );
+        // ... existing code ...
     }
 } 

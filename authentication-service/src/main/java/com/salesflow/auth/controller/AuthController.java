@@ -1,5 +1,10 @@
 package com.salesflow.auth.controller;
 
+import java.time.Instant;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -13,10 +18,12 @@ import com.salesflow.auth.dto.AuthResponse;
 import com.salesflow.auth.dto.RegisterRequest;
 import com.salesflow.auth.dto.ApiResponseWrapper;
 import com.salesflow.auth.dto.ForgotPasswordRequest;
+import com.salesflow.auth.dto.RefreshTokenRequest;
 import com.salesflow.auth.dto.ResetPasswordRequest;
 import com.salesflow.auth.dto.OtpRequest;
 import com.salesflow.auth.dto.OtpLoginRequest;
 import com.salesflow.auth.repository.RoleRepository;
+import com.salesflow.auth.repository.TokenRepository;
 import com.salesflow.auth.repository.UserRepository;
 import com.salesflow.auth.service.CustomUserDetails;
 import com.salesflow.auth.service.JwtService;
@@ -30,6 +37,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import com.salesflow.auth.domain.Token;
+import io.jsonwebtoken.Claims;
+
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -40,6 +50,7 @@ public class AuthController {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final TokenRepository tokenRepository;
 
     @Operation(
         summary = "Register a new user",
@@ -140,7 +151,8 @@ public class AuthController {
 
     @Operation(
         summary = "Refresh authentication token",
-        description = "Generates new access and refresh tokens using a valid refresh token"
+        description = "Generates new access and refresh tokens using a valid refresh token. " +
+                      "The request body must contain a 'refreshToken' field with the refresh token string value."
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Tokens refreshed successfully",
@@ -149,16 +161,34 @@ public class AuthController {
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PostMapping("/refresh")
-    public ResponseEntity<ApiResponseWrapper<AuthResponse>> refreshToken(@Valid @RequestBody String refreshToken) {
-        if (!jwtService.validateRefreshToken(refreshToken)) {
-            throw new RuntimeException("Invalid refresh token");
-        }
-
-        String username = jwtService.extractUsername(refreshToken);
-        CustomUserDetails userDetails = (CustomUserDetails) jwtService.getAuthentication(refreshToken).getPrincipal();
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+        description = "The refresh token to use for generating new tokens",
+        required = true,
+        content = @Content(
+            mediaType = "application/json",
+            schema = @Schema(implementation = RefreshTokenRequest.class),
+            examples = {
+                @io.swagger.v3.oas.annotations.media.ExampleObject(
+                    name = "Refresh Token Example",
+                    summary = "Example of a refresh token request",
+                    value = "{ \"refreshToken\": \"eyJhbGciOiJIUzI1NiJ9...\" }"
+                )
+            }
+        )
+    )
+    public ResponseEntity<ApiResponseWrapper<AuthResponse>> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
+        String refreshToken = request.getRefreshToken();
         
-        String newAccessToken = jwtService.generateAccessToken(userDetails);
-        String newRefreshToken = jwtService.generateRefreshToken(userDetails);
+        try {
+            if (!jwtService.validateRefreshToken(refreshToken)) {
+                throw new RuntimeException("Invalid refresh token");
+            }
+            
+            String username = jwtService.extractUsername(refreshToken);
+            CustomUserDetails userDetails = (CustomUserDetails) jwtService.getAuthentication(refreshToken).getPrincipal();
+            
+            String newAccessToken = jwtService.generateAccessToken(userDetails);
+            String newRefreshToken = jwtService.generateRefreshToken(userDetails);
 
         AuthResponse authResponse = AuthResponse.builder()
                 .accessToken(newAccessToken)
@@ -172,6 +202,67 @@ public class AuthController {
                 .build();
 
         return ResponseEntity.ok(ApiResponseWrapper.success("Token refreshed successfully", authResponse));
+        } catch (Exception e) {
+            // Log the exception for debugging
+            e.printStackTrace();
+            throw new RuntimeException("Invalid refresh token: " + e.getMessage());
+        }
+    }
+    
+    @Operation(
+        summary = "Check token status",
+        description = "Debug endpoint to check the status of a JWT token"
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Token status retrieved"),
+        @ApiResponse(responseCode = "400", description = "Invalid token format"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @PostMapping("/token-status")
+    public ResponseEntity<ApiResponseWrapper<Map<String, Object>>> checkTokenStatus(@RequestBody RefreshTokenRequest request) {
+        String token = request.getRefreshToken();
+        Map<String, Object> status = new HashMap<>();
+        
+        try {
+            // Basic token validity
+            status.put("valid_format", true);
+            
+            // Check if it's a refresh token in the database
+            boolean inDatabase = tokenRepository.findByRefreshToken(token).isPresent();
+            status.put("in_database", inDatabase);
+            
+            if (inDatabase) {
+                Token refreshToken = tokenRepository.findByRefreshToken(token).get();
+                status.put("revoked", refreshToken.isRevoked());
+                status.put("expiry_date", refreshToken.getExpiryDate().toString());
+                status.put("expired", refreshToken.getExpiryDate().isBefore(Instant.now()));
+                status.put("user", refreshToken.getUser().getUsername());
+            }
+            
+            // Extract JWT claims
+            try {
+                Claims claims = jwtService.extractAllClaims(token);
+                status.put("subject", claims.getSubject());
+                status.put("issued_at", claims.getIssuedAt().toString());
+                status.put("expiration", claims.getExpiration().toString());
+                status.put("jwt_expired", claims.getExpiration().before(new Date()));
+                
+                // If the token contains roles, it's likely an access token
+                if (claims.containsKey("roles")) {
+                    status.put("token_type", "access_token");
+                } else {
+                    status.put("token_type", "refresh_token");
+                }
+            } catch (Exception e) {
+                status.put("claims_error", e.getMessage());
+            }
+            
+            return ResponseEntity.ok(ApiResponseWrapper.success("Token status retrieved", status));
+        } catch (Exception e) {
+            status.put("valid_format", false);
+            status.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(ApiResponseWrapper.error("Invalid token format:" + status.get("error")));
+        }
     }
 
     @Operation(

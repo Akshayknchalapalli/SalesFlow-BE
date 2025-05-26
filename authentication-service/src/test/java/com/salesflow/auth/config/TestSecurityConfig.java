@@ -40,6 +40,8 @@ import com.salesflow.auth.domain.Role;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
+import java.util.Collections;
 
 
 @Configuration
@@ -60,7 +62,7 @@ public class TestSecurityConfig {
                 .username("testuser")
                 .password(passwordEncoder().encode("password"))
                 .email("test@example.com")
-                .tenantId("test-tenant")
+                .tenantId(UUID.randomUUID())
                 .enabled(true)
                 .build();
         
@@ -72,9 +74,9 @@ public class TestSecurityConfig {
     @Bean
     @Primary
     public RoleRepository roleRepository() {
-        Role userRole = new Role(1L, "ROLE_USER");
-        Role adminRole = new Role(2L, "ROLE_ADMIN");
-        Role tenantAdminRole = new Role(3L, "ROLE_TENANT_ADMIN");
+        Role userRole = new Role(UUID.randomUUID(), "ROLE_USER");
+        Role adminRole = new Role(UUID.randomUUID(), "ROLE_ADMIN");
+        Role tenantAdminRole = new Role(UUID.randomUUID(), "ROLE_TENANT_ADMIN");
         
         RoleRepository mockRepo = Mockito.mock(RoleRepository.class);
         Mockito.when(mockRepo.findByName("ROLE_USER")).thenReturn(Optional.of(userRole));
@@ -90,17 +92,20 @@ public class TestSecurityConfig {
     }
     
     @Bean
-    public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {
-        InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
-        manager.createUser(org.springframework.security.core.userdetails.User.withUsername("testuser")
-            .password(passwordEncoder.encode("password"))
-            .roles("USER")
-            .build());
-        manager.createUser(org.springframework.security.core.userdetails.User.withUsername("admin")
-            .password(passwordEncoder.encode("password"))
-            .roles("ADMIN")
-            .build());
-        return manager;
+    public UserDetailsService userDetailsService() {
+        return username -> {
+            User user = new User();
+            user.setId(UUID.randomUUID());
+            user.setEmail(username);
+            user.setPassword("password");
+            user.setTenantId(UUID.randomUUID());
+            user.setEnabled(true);
+            return new org.springframework.security.core.userdetails.User(
+                    user.getEmail(),
+                    user.getPassword(),
+                    Collections.emptyList()
+            );
+        };
     }
     
     @Bean

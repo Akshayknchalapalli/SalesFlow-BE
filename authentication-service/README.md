@@ -1,6 +1,6 @@
 # Authentication Service
 
-This service handles user authentication and authorization for the SalesFlow application. It provides JWT-based authentication with role-based access control and tenant-based isolation.
+This service handles user authentication and authorization for the SalesFlow application. It provides JWT-based authentication with role-based access control and schema-based multi-tenant isolation.
 
 ## Features
 
@@ -8,7 +8,8 @@ This service handles user authentication and authorization for the SalesFlow app
 - JWT token-based authentication
 - Refresh token mechanism
 - Role-based access control
-- Tenant-based access control
+- Schema-based multi-tenant isolation
+- UUID/GUID-based entity identifiers
 - Integration with other microservices
 
 ## Prerequisites
@@ -62,7 +63,7 @@ Content-Type: application/json
     "username": "string",
     "email": "string",
     "password": "string",
-    "tenantId": "string"
+    "tenantId": "UUID string"
 }
 ```
 
@@ -94,7 +95,8 @@ Content-Type: application/json
     "refreshToken": "string",
     "username": "string",
     "email": "string",
-    "tenantId": "string",
+    "tenantId": "UUID string",
+    "tenantName": "string",
     "roles": ["string"]
 }
 ```
@@ -114,7 +116,8 @@ Content-Type: application/json
 - JWT tokens are used for authentication
 - Passwords are encrypted using BCrypt
 - Role-based access control is implemented
-- Tenant-based isolation is enforced
+- Schema-based tenant isolation is enforced
+- Each tenant has a dedicated database schema named `tenant_<tenantName>`
 
 ### Environment Variables
 
@@ -134,21 +137,54 @@ The application uses the following key environment variables:
 The authentication service integrates with other microservices through JWT tokens. Each token contains:
 - User information
 - Role information
-- Tenant information
+- Tenant information (ID and name)
 
-Other services should validate the JWT token and extract the tenant ID for proper data isolation.
+Other services should validate the JWT token and extract the tenant information for proper data isolation.
+
+## Multi-Tenant Implementation
+
+The service implements schema-based multi-tenancy where:
+
+- Each tenant has its own isolated database schema named `tenant_<tenantName>`
+- Tenant identification occurs via subdomain (e.g., `acme.salesflow.com`) or X-Tenant-ID header
+- All entities use UUID/GUID identifiers for better security and portability
+- Tenant data is completely isolated at the database level
+- Flyway manages schema migrations for both shared and tenant-specific schemas
+
+See [MULTI-TENANT-IMPLEMENTATION.md](MULTI-TENANT-IMPLEMENTATION.md) for detailed information.
 
 ## Development
 
 ### Adding New Roles
 
-1. Add the role to `data.sql`
+1. Add the role to the auth schema migration script
 2. Update the security configuration if needed
 3. Assign the role to users as required
 
 ### Customizing Tenant Validation
 
-Modify the `TenantValidator` class to implement your specific tenant validation rules.
+Modify the `SubdomainTenantResolver` class to implement your specific tenant resolution rules.
+
+### Creating New Tenants
+
+Use the Tenant API to create new tenants:
+
+```http
+POST /api/tenants
+Content-Type: application/json
+
+{
+    "name": "Acme Corporation",
+    "adminEmail": "admin@acme.com",
+    "adminPassword": "securePassword"
+}
+```
+
+This will:
+1. Create a new tenant record with a UUID
+2. Create a tenant-specific schema named `tenant_acme_corporation`
+3. Run tenant-specific migrations
+4. Create an admin user for the tenant
 
 ## Development
 

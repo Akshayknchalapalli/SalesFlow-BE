@@ -14,7 +14,7 @@
   </parent>
   
   <artifactId>authentication-service</artifactId>
-  <n>Authentication Service</n>
+  <name>Authentication Service</name>
   <description>Authentication service for SalesFlow application</description>
   
   <properties>

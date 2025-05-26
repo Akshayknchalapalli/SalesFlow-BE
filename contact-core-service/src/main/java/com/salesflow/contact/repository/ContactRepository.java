@@ -15,9 +15,11 @@ import java.util.UUID;
 @Repository
 public interface ContactRepository extends JpaRepository<Contact, UUID> {
     
-    Optional<Contact> findByEmail(String email);
+    @Query("SELECT c FROM Contact c WHERE c.email = :email")
+    Optional<Contact> findByEmail(@Param("email") String email);
     
-    Page<Contact> findByOwnerId(String ownerId, Pageable pageable);
+    @Query("SELECT c FROM Contact c WHERE c.ownerId = :ownerId")
+    Page<Contact> findByOwnerId(@Param("ownerId") String ownerId, Pageable pageable);
     
     @Query("SELECT c FROM Contact c WHERE c.ownerId = :ownerId AND " +
            "LOWER(c.firstName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
@@ -29,11 +31,19 @@ public interface ContactRepository extends JpaRepository<Contact, UUID> {
                                 @Param("searchTerm") String searchTerm,
                                 Pageable pageable);
     
-    List<Contact> findByOwnerIdAndStage(String ownerId, Contact.ContactStage stage);
+    @Query("SELECT c FROM Contact c WHERE c.ownerId = :ownerId AND c.stage = :stage")
+    List<Contact> findByOwnerIdAndStage(@Param("ownerId") String ownerId,
+                                       @Param("stage") Contact.ContactStage stage);
     
     @Query("SELECT COUNT(c) FROM Contact c WHERE c.ownerId = :ownerId AND c.stage = :stage")
     long countByOwnerIdAndStage(@Param("ownerId") String ownerId,
                                @Param("stage") Contact.ContactStage stage);
     
-    boolean existsByEmailAndIdNot(String email, UUID id);
+    @Query("SELECT CASE WHEN COUNT(c) > 0 THEN true ELSE false END FROM Contact c " +
+           "WHERE c.email = :email AND c.id != :id")
+    boolean existsByEmailAndIdNot(@Param("email") String email, @Param("id") UUID id);
+    
+    @Query("SELECT CASE WHEN COUNT(c) > 0 THEN true ELSE false END FROM Contact c " +
+           "WHERE c.email = :email")
+    boolean existsByEmail(@Param("email") String email);
 } 

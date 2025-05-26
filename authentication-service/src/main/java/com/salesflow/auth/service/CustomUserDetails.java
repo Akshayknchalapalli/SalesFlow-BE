@@ -1,6 +1,7 @@
 package com.salesflow.auth.service;
 
 import java.util.Collection;
+import java.util.UUID;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -36,7 +37,7 @@ public class CustomUserDetails implements UserDetails {
         return user.getEmail();
     }
 
-    public String getTenantId() {
+    public UUID getTenantId() {
         return user.getTenantId();
     }
 

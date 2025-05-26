@@ -1,4 +1,6 @@
 # Default profile (Optional if you want to set dev as default)
 spring:
+  application:
+    name: authentication-service
   profiles:
     active: dev

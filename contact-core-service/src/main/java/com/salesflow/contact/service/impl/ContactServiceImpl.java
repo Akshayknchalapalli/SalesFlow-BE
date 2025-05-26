@@ -69,7 +69,6 @@ public class ContactServiceImpl implements ContactService {
                 profile.setUpdatedBy(ownerId);
                 profile.setCreatedAt(Instant.now());
                 profile.setUpdatedAt(Instant.now());
-                profile.setVersion(0L);
             });
         }
 

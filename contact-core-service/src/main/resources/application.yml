@@ -10,18 +10,26 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        multitenancy: SCHEMA
+        default_schema: contact
 
   flyway:
     enabled: true
     baseline-on-migrate: true
-    locations: classpath:db/migration
-    schema: contact-core
+    locations: 
+      - classpath:db/migration/public
+      - classpath:db/migration/contact
+      - classpath:db/migration/tenant/contact
+    schemas: public,contact
+    create-schemas: true
+    validate-on-migrate: true
+    out-of-order: true
 
   cloud:
     config:
@@ -72,9 +80,23 @@ logging:
   level:
     org.springframework: INFO
     com.salesflow.contact: DEBUG
+    com.salesflow.contact.config.tenant: DEBUG
     org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql: TRACE
     com.netflix.eureka: DEBUG
     com.netflix.discovery: DEBUG
+
+# Multi-tenancy configuration
+multitenancy:
+  entity:
+    packages: com.salesflow.contact.domain
+  namespace: contact_data
+  schemas: contact,public
+  migration:
+    locations:
+      public: classpath:db/migration/public
+      contact: classpath:db/migration/contact
+      tenant: classpath:db/migration/tenant/contact
 
 eureka:
   client:

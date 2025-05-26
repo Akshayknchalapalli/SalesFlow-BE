@@ -1,5 +1,5 @@
 -- For H2 compatibility in tests
-CREATE ALIAS IF NOT EXISTS authentication.update_updated_at_column AS $$
+CREATE ALIAS IF NOT EXISTS auth.update_updated_at_column AS $$
 void execute(java.sql.Connection connection) throws SQLException {
     // No-op for H2 since we'll handle timestamps in JPA
 }
@@ -22,7 +22,7 @@ $$;
 CREATE ALIAS IF NOT EXISTS INSERT_ROLE_IF_NOT_EXISTS AS $$
 void insertRoleIfNotExists(Connection conn, String roleName) throws SQLException {
     try (PreparedStatement stmt = conn.prepareStatement(
-        "MERGE INTO authentication.roles (name) KEY (name) VALUES (?)")) {
+        "MERGE INTO auth.roles (name) KEY (name) VALUES (?)")) {
         stmt.setString(1, roleName);
         stmt.executeUpdate();
     }

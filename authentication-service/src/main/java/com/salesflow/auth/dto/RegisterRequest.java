@@ -1,5 +1,7 @@
 package com.salesflow.auth.dto;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
@@ -20,7 +22,7 @@ public class RegisterRequest {
     private String confirmPassword;
 
     @NotBlank(message = "Tenant ID is required")
-    private String tenantId;
+    private UUID tenantId;
     
     private String requestedRole;
 } 

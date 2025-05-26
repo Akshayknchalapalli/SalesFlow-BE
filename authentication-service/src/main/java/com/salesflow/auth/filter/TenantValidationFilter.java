@@ -1,27 +1,28 @@
 package com.salesflow.auth.filter;
 
+import com.salesflow.auth.tenant.SubdomainTenantResolver;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.regex.Pattern;
+import java.util.UUID;
 
 @Component
+@RequiredArgsConstructor
 public class TenantValidationFilter extends OncePerRequestFilter {
-
-    private static final Pattern TENANT_ID_PATTERN = Pattern.compile("^[a-zA-Z0-9-_]+$");
-    private static final int MIN_TENANT_ID_LENGTH = 3;
-    private static final int MAX_TENANT_ID_LENGTH = 50;
+    private final SubdomainTenantResolver tenantResolver;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         
-        String tenantId = request.getHeader("X-Tenant-ID");
+        // Try to resolve tenant from subdomain first, then fallback to header
+        UUID tenantId = tenantResolver.resolveTenantId(request);
         
         // Skip tenant validation for public endpoints
         if (isPublicEndpoint(request.getRequestURI())) {
@@ -31,9 +32,13 @@ public class TenantValidationFilter extends OncePerRequestFilter {
 
         // Validate tenant ID if present
         if (tenantId != null) {
-            if (!isValidTenantId(tenantId)) {
+            // Add the tenant ID as a request attribute so it can be accessed by other components
+            request.setAttribute("CURRENT_TENANT_ID", tenantId);
+        } else {
+            // For protected endpoints that require a tenant ID
+            if (requiresTenantId(request.getRequestURI())) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write("Invalid tenant ID format. Must be 3-50 characters and contain only letters, numbers, hyphens, and underscores.");
+                response.getWriter().write("Tenant ID is required for this endpoint. Please access via tenant subdomain or provide X-Tenant-ID header.");
                 return;
             }
         }
@@ -46,12 +51,24 @@ public class TenantValidationFilter extends OncePerRequestFilter {
                uri.startsWith("/api/auth/login") ||
                uri.startsWith("/api/auth/refresh") ||
                uri.startsWith("/api-docs") ||
-               uri.startsWith("/swagger-ui");
+               uri.startsWith("/swagger-ui") ||
+               uri.startsWith("/v3/api-docs") ||
+               uri.startsWith("/swagger-ui.html") ||
+               uri.startsWith("/actuator");
     }
-
-    private boolean isValidTenantId(String tenantId) {
-        return tenantId.length() >= MIN_TENANT_ID_LENGTH &&
-               tenantId.length() <= MAX_TENANT_ID_LENGTH &&
-               TENANT_ID_PATTERN.matcher(tenantId).matches();
+    
+    private boolean requiresTenantId(String uri) {
+        return uri.startsWith("/api/auth/tenant/") ||
+               uri.startsWith("/api/contacts/") ||
+               uri.startsWith("/api/activities/");
+    }
+    
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return path.startsWith("/swagger-ui") || 
+               path.startsWith("/api-docs") || 
+               path.startsWith("/v3/api-docs") ||
+               path.equals("/swagger-ui.html");
     }
 } 

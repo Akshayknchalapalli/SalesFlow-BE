@@ -1,13 +1,8 @@
 package com.salesflow.contact.domain;
 
-import jakarta.persistence.Embeddable;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Column;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 import java.time.Instant;
 
 @Embeddable
@@ -16,17 +11,26 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SocialProfile {
+    
     public enum Platform {
-        LINKEDIN, TWITTER, FACEBOOK, INSTAGRAM, GITHUB, OTHER
+        LINKEDIN,
+        TWITTER,
+        FACEBOOK,
+        INSTAGRAM,
+        GITHUB,
+        WEBSITE,
+        OTHER
     }
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "platform")
+    @Column(name = "platform", nullable = false)
     private Platform platform;
+
+    @Column(name = "profile_url", nullable = false)
     private String profileUrl;
-    private String username;
-    @Column(name = "is_verified")
-    private boolean verified;
+
+    @Column(name = "is_primary")
+    private boolean primary;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -39,11 +43,4 @@ public class SocialProfile {
 
     @Column(name = "updated_by", nullable = false)
     private String updatedBy;
-
-    @Column(name = "version", nullable = false)
-    private Long version;
-
-    public boolean isVerified() {
-        return verified;
-    }
 } 
