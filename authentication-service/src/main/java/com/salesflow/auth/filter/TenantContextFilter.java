@@ -49,9 +49,7 @@ public class TenantContextFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        return path.startsWith("/swagger-ui") || 
-               path.startsWith("/api-docs") || 
-               path.startsWith("/v3/api-docs") ||
-               path.equals("/swagger-ui.html");
+        // We now want to apply tenant context to Swagger UI to provide tenant-specific documentation
+        return path.startsWith("/api-docs") || path.startsWith("/v3/api-docs");
     }
 }

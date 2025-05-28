@@ -7,18 +7,26 @@ import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.PathItem;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.salesflow.auth.tenant.SubdomainTenantResolver;
+import com.salesflow.auth.tenant.TenantContext;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
+@Slf4j
 @Configuration
 @RequiredArgsConstructor
 public class OpenApiConfig {
@@ -27,17 +35,13 @@ public class OpenApiConfig {
 
     @Bean
     public OpenAPI customOpenAPI() {
-        return new OpenAPI()
-                .info(new Info()
-                        .title("Authentication Service API")
-                        .description("API documentation for the Authentication Service")
-                        .version("1.0")
-                        .contact(new Contact()
-                                .name("SalesFlow Team")
-                                .email("support@salesflow.com"))
-                        .license(new License()
-                                .name("Apache 2.0")
-                                .url("http://www.apache.org/licenses/LICENSE-2.0.html")))
+        // Get current tenant context
+        UUID tenantId = TenantContext.getCurrentTenantId();
+        String tenantName = TenantContext.getCurrentTenantName();
+        
+        // Create base OpenAPI object
+        OpenAPI api = new OpenAPI()
+                .info(createApiInfo(tenantId, tenantName))
                 .servers(getServers())
                 .components(new io.swagger.v3.oas.models.Components()
                         .addSecuritySchemes("bearerAuth", 
@@ -49,6 +53,36 @@ public class OpenApiConfig {
                         )
                 )
                 .addSecurityItem(new SecurityRequirement().addList("bearerAuth"));
+                
+        // Register callback to filter paths based on tenant context
+        api.addExtension("x-tenant-filter", true);
+        
+        log.info("Initializing OpenAPI with tenant context: {} ({})", tenantName, tenantId);
+        
+        return api;
+    }
+    
+    private Info createApiInfo(UUID tenantId, String tenantName) {
+        Info info = new Info()
+                .version("1.0")
+                .contact(new Contact()
+                        .name("SalesFlow Team")
+                        .email("support@salesflow.com"))
+                .license(new License()
+                        .name("Apache 2.0")
+                        .url("http://www.apache.org/licenses/LICENSE-2.0.html"));
+        
+        if (tenantId != null) {
+            // Tenant-specific info
+            info.title("Tenant API - " + tenantName)
+                .description("API documentation for tenant: " + tenantName);
+        } else {
+            // System-wide info
+            info.title("SalesFlow Authentication Service API")
+                .description("API documentation for the Authentication Service (System Level)");
+        }
+        
+        return info;
     }
     
     private List<Server> getServers() {
@@ -71,19 +105,37 @@ public class OpenApiConfig {
                 serverUrl += ":" + serverPort;
             }
             
-            servers.add(new Server()
-                    .url(serverUrl)
-                    .description("Current Server"));
+            // Get tenant context
+            UUID tenantId = TenantContext.getCurrentTenantId();
+            String tenantName = TenantContext.getCurrentTenantName();
             
-            // If we're in local development mode, add tenant-specific servers
+            if (tenantId != null) {
+                servers.add(new Server()
+                        .url(serverUrl)
+                        .description("Current Tenant: " + tenantName));
+            } else {
+                servers.add(new Server()
+                        .url(serverUrl)
+                        .description("System Level"));
+            }
+            
+            // If we're in local development mode, add additional options
             if (tenantProperties.isLocalDevelopmentMode()) {
-                // Add some example tenant servers for testing
-                String[] exampleTenants = {"tenant1", "tenant2", "tenant3"};
-                for (String tenant : exampleTenants) {
-                    String tenantUrl = scheme + "://" + tenant + ".localhost:" + serverPort;
+                if (tenantId == null) {
+                    // If we're in system context, add tenant options
+                    String[] exampleTenants = {"tenant1", "tenant2", "tenant3"};
+                    for (String tenant : exampleTenants) {
+                        String tenantUrl = scheme + "://" + tenant + ".localhost:" + serverPort;
+                        servers.add(new Server()
+                                .url(tenantUrl)
+                                .description(tenant + " Tenant"));
+                    }
+                } else {
+                    // If we're in tenant context, add system option
+                    String systemUrl = scheme + "://localhost:" + serverPort;
                     servers.add(new Server()
-                            .url(tenantUrl)
-                            .description(tenant + " Tenant"));
+                            .url(systemUrl)
+                            .description("System Level"));
                 }
             }
         } else {
@@ -94,5 +146,30 @@ public class OpenApiConfig {
         }
         
         return servers;
+    }
+    
+    /**
+     * Filters OpenAPI paths based on tenant context
+     * Note: This method would need a SpringDoc customization to be called
+     */
+    public OpenAPI filterApiForTenant(OpenAPI api) {
+        UUID tenantId = TenantContext.getCurrentTenantId();
+        
+        if (tenantId != null && api.getPaths() != null) {
+            // In tenant context, remove admin endpoints
+            io.swagger.v3.oas.models.Paths paths = new io.swagger.v3.oas.models.Paths();
+            
+            api.getPaths().forEach((path, pathItem) -> {
+                // Skip admin endpoints in tenant context
+                if (!path.startsWith("/api/admin")) {
+                    paths.addPathItem(path, pathItem);
+                }
+            });
+            
+            api.setPaths(paths);
+            log.debug("Filtered API paths for tenant context");
+        }
+        
+        return api;
     }
 } 

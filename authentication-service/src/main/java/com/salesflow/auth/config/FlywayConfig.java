@@ -1,21 +1,6 @@
 package com.salesflow.auth.config;
 
-import lombok.extern.slf4j.Slf4j;
-import org.flywaydb.core.Flyway;
-import org.flywaydb.core.api.configuration.FluentConfiguration;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-import org.springframework.core.annotation.Order;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.core.Ordered;
-
 import jakarta.annotation.PostConstruct;
-
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -25,7 +10,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import javax.sql.DataSource;
+import lombok.extern.slf4j.Slf4j;
+import org.flywaydb.core.Flyway;
+import org.flywaydb.core.api.configuration.FluentConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 
 @Slf4j
 @Configuration
@@ -33,7 +31,7 @@ import org.springframework.boot.ApplicationArguments;
 public class FlywayConfig implements ApplicationRunner {
 
     private final DataSource dataSource;
-    
+
     public FlywayConfig(DataSource dataSource) {
         this.dataSource = dataSource;
     }
@@ -45,13 +43,16 @@ public class FlywayConfig implements ApplicationRunner {
     private String[] defaultSchemas;
 
     // Define fixed migration locations for different schemas to avoid conflicts
-    private static final String AUTH_MIGRATION_LOCATION = "classpath:db/migration/auth";
-    private static final String PUBLIC_MIGRATION_LOCATION = "classpath:db/migration/public";
-    private static final String TENANT_MIGRATION_LOCATION = "classpath:db/migration/tenant";
-    
+    private static final String AUTH_MIGRATION_LOCATION =
+        "classpath:db/migration/auth";
+    private static final String PUBLIC_MIGRATION_LOCATION =
+        "classpath:db/migration/public";
+    private static final String TENANT_MIGRATION_LOCATION =
+        "classpath:db/migration/tenant";
+
     @Value("${spring.flyway.repair-on-start:false}")
     private boolean repairOnStart;
-    
+
     @Value("${spring.flyway.validate-on-migrate:true}")
     private boolean validateOnMigrate;
 
@@ -63,7 +64,7 @@ public class FlywayConfig implements ApplicationRunner {
         }
 
         log.info("Initializing database schemas for multi-tenant setup");
-    
+
         try {
             // Run repair if enabled (before any migration)
             if (repairOnStart) {
@@ -71,13 +72,13 @@ public class FlywayConfig implements ApplicationRunner {
                 repairMigration("auth", AUTH_MIGRATION_LOCATION);
                 repairMigration("public", PUBLIC_MIGRATION_LOCATION);
             }
-        
+
             // Create public schema with tenant registry
             runMigration("public", PUBLIC_MIGRATION_LOCATION);
-        
+
             // Create authentication schema
             runMigration("auth", AUTH_MIGRATION_LOCATION);
-        
+
             // Load existing tenants and create schemas for them
             List<UUID> tenants = loadExistingTenants();
             for (UUID tenantId : tenants) {
@@ -85,10 +86,19 @@ public class FlywayConfig implements ApplicationRunner {
             }
         } catch (Exception e) {
             log.error("Database initialization failed", e);
-            if (e instanceof org.flywaydb.core.api.exception.FlywayValidateException) {
-                log.error("MIGRATION VALIDATION FAILED! Please consider the following options:");
-                log.error("1. Set spring.flyway.repair-on-start=true to repair the schema history");
-                log.error("2. Set spring.flyway.validate-on-migrate=false to skip validation");
+            if (
+                e instanceof
+                org.flywaydb.core.api.exception.FlywayValidateException
+            ) {
+                log.error(
+                    "MIGRATION VALIDATION FAILED! Please consider the following options:"
+                );
+                log.error(
+                    "1. Set spring.flyway.repair-on-start=true to repair the schema history"
+                );
+                log.error(
+                    "2. Set spring.flyway.validate-on-migrate=false to skip validation"
+                );
                 log.error("3. Manually clean the database and start fresh");
             }
             throw e;
@@ -105,15 +115,19 @@ public class FlywayConfig implements ApplicationRunner {
     }
 
     private void runMigration(String schema, String location) {
-        log.info("Running migration for schema {} from location {}", schema, location);
+        log.info(
+            "Running migration for schema {} from location {}",
+            schema,
+            location
+        );
         Flyway flyway = Flyway.configure()
             .dataSource(dataSource)
             .schemas(schema)
             .locations(location)
             .validateOnMigrate(validateOnMigrate)
             .baselineOnMigrate(true)
-            .outOfOrder(true)  // Allow out of order migrations for more flexibility
-            .ignoreMigrationPatterns("*:missing")  // Don't fail on missing migrations
+            .outOfOrder(true) // Allow out of order migrations for more flexibility
+            .ignoreMigrationPatterns("*:missing") // Don't fail on missing migrations
             .load();
         flyway.migrate();
         log.info("Migration completed for schema {}", schema);
@@ -124,7 +138,9 @@ public class FlywayConfig implements ApplicationRunner {
         try {
             Connection conn = dataSource.getConnection();
             Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT tenant_id FROM public.tenants WHERE active = true");
+            ResultSet rs = stmt.executeQuery(
+                "SELECT tenant_id FROM public.tenants WHERE active = true"
+            );
             while (rs.next()) {
                 tenants.add(rs.getObject("tenant_id", UUID.class));
             }
@@ -140,32 +156,41 @@ public class FlywayConfig implements ApplicationRunner {
             // Get tenant name from database
             String tenantName = getTenantName(tenantId);
             if (tenantName == null) {
-                log.error("Failed to get tenant name for tenant ID: {}", tenantId);
+                log.error(
+                    "Failed to get tenant name for tenant ID: {}",
+                    tenantId
+                );
                 return;
             }
-            
+
             // Format the schema name using tenant name instead of ID
             String schemaName = "tenant_" + formatSchemaName(tenantName);
-            
+
             Connection conn = dataSource.getConnection();
             Statement stmt = conn.createStatement();
             stmt.execute("CREATE SCHEMA IF NOT EXISTS \"" + schemaName + "\"");
-            log.info("Created schema for tenant: {} ({})", schemaName, tenantId);
-            
+            log.info(
+                "Created schema for tenant: {} ({})",
+                schemaName,
+                tenantId
+            );
+
             // Record schema creation in tenant_schemas table
             recordTenantSchema(tenantId, schemaName, "auth");
         } catch (Exception e) {
             log.error("Failed to create schema for tenant: {}", tenantId, e);
         }
     }
-    
+
     /**
      * Gets the tenant name for a given tenant ID
      */
     private String getTenantName(UUID tenantId) {
         try {
             Connection conn = dataSource.getConnection();
-            PreparedStatement pstmt = conn.prepareStatement("SELECT name FROM public.tenants WHERE tenant_id = ?");
+            PreparedStatement pstmt = conn.prepareStatement(
+                "SELECT name FROM public.tenants WHERE tenant_id = ?"
+            );
             pstmt.setObject(1, tenantId);
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
@@ -173,31 +198,44 @@ public class FlywayConfig implements ApplicationRunner {
             }
             return null;
         } catch (Exception e) {
-            log.error("Failed to get tenant name for tenant ID: {}", tenantId, e);
+            log.error(
+                "Failed to get tenant name for tenant ID: {}",
+                tenantId,
+                e
+            );
             return null;
         }
     }
-    
+
     /**
      * Records the tenant schema in the tenant_schemas table
      */
-    private void recordTenantSchema(UUID tenantId, String schemaName, String serviceName) {
+    private void recordTenantSchema(
+        UUID tenantId,
+        String schemaName,
+        String serviceName
+    ) {
         try {
             Connection conn = dataSource.getConnection();
             PreparedStatement pstmt = conn.prepareStatement(
                 "INSERT INTO public.tenant_schemas (tenant_id, schema_name, service_name, migration_status) " +
                 "VALUES (?, ?, ?, 'COMPLETED') " +
                 "ON CONFLICT (tenant_id, service_name) DO UPDATE SET " +
-                "schema_name = EXCLUDED.schema_name, migration_status = EXCLUDED.migration_status");
+                "schema_name = EXCLUDED.schema_name, migration_status = EXCLUDED.migration_status"
+            );
             pstmt.setObject(1, tenantId);
             pstmt.setString(2, schemaName);
             pstmt.setString(3, serviceName);
             pstmt.executeUpdate();
         } catch (Exception e) {
-            log.error("Failed to record tenant schema for tenant: {}", tenantId, e);
+            log.error(
+                "Failed to record tenant schema for tenant: {}",
+                tenantId,
+                e
+            );
         }
     }
-    
+
     /**
      * Formats a tenant name to be used as a schema name
      * Replaces spaces and special characters with underscores
@@ -215,17 +253,22 @@ public class FlywayConfig implements ApplicationRunner {
         try {
             // Validate tenant name
             if (name == null || name.trim().isEmpty()) {
-                throw new IllegalArgumentException("Tenant name cannot be empty");
+                throw new IllegalArgumentException(
+                    "Tenant name cannot be empty"
+                );
             }
-            
+
             // Format name for database use if needed
             String cleanName = name.trim();
-            
+
             Connection conn = dataSource.getConnection();
-            
+
             // Insert tenant record
-            String insertTenant = "INSERT INTO public.tenants (tenant_id, name, domain, active) VALUES (?, ?, ?, true)";
-            try (PreparedStatement pstmt = conn.prepareStatement(insertTenant)) {
+            String insertTenant =
+                "INSERT INTO public.tenants (id , tenant_id, name, domain, active) VALUES ( gen_random_uuid(),?, ?, ?, true)";
+            try (
+                PreparedStatement pstmt = conn.prepareStatement(insertTenant)
+            ) {
                 pstmt.setObject(1, tenantId);
                 pstmt.setString(2, cleanName);
                 pstmt.setString(3, domain);
@@ -239,10 +282,17 @@ public class FlywayConfig implements ApplicationRunner {
             String schemaName = "tenant_" + formatSchemaName(cleanName);
             runMigration("\"" + schemaName + "\"", TENANT_MIGRATION_LOCATION);
 
-            log.info("Successfully registered tenant: {} ({})", cleanName, tenantId);
+            log.info(
+                "Successfully registered tenant: {} ({})",
+                cleanName,
+                tenantId
+            );
         } catch (Exception e) {
             log.error("Failed to register tenant: {} ({})", name, tenantId, e);
-            throw new RuntimeException("Failed to register tenant: " + name + " (" + tenantId + ")", e);
+            throw new RuntimeException(
+                "Failed to register tenant: " + name + " (" + tenantId + ")",
+                e
+            );
         }
     }
 }

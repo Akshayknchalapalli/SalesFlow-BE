@@ -2,14 +2,14 @@ spring:
   application:
     name: authentication-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/salesflowdb-dev
-    username: postgres
-    password: postgres
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/salesflowdb_dev}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
@@ -50,9 +50,16 @@ server:
 
 eureka:
   client:
-    enabled: false  # Disable Eureka client for now
+    enabled: true
+    register-with-eureka: true
+    fetch-registry: true
     service-url:
       defaultZone: http://localhost:8761/eureka/
+    initial-instance-info-replication-interval-seconds: 5
+    registry-fetch-interval-seconds: 5
+  instance:
+    prefer-ip-address: true
+    hostname: localhost
 
 jwt:
   secret-key: ${JWT_SECRET_KEY:thisIsAVerySecureKeyForJwtTokenSigningThatShouldBeReplaced}

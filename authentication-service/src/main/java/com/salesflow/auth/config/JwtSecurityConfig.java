@@ -42,8 +42,10 @@ public class JwtSecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/refresh").permitAll()
                 .requestMatchers("/api/auth/validate").authenticated()
+                .requestMatchers("/api/admin/tenants/**").hasRole("ADMIN")
                 .requestMatchers("/api/auth/admin/**").hasRole("ADMIN")
-                .requestMatchers("/api/auth/tenant/**").hasRole("TENANT_ADMIN")
+                .requestMatchers("/api/tenants/**").hasAnyRole("ADMIN", "TENANT_ADMIN")
+                .requestMatchers("/api/auth/tenant/**").hasAnyRole("ADMIN", "TENANT_ADMIN")
                 .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/api-docs/**", "/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated()
             )
@@ -70,7 +72,7 @@ public class JwtSecurityConfig {
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "X-Tenant-ID", "Host"));
-        configuration.setExposedHeaders(Arrays.asList("Authorization"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "X-Tenant-ID"));
         configuration.setAllowCredentials(true);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

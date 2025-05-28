@@ -4,3 +4,29 @@ spring:
     name: authentication-service
   profiles:
     active: dev
+
+# Tenant configuration
+tenant:
+  baseDomain: localhost
+  localDevelopmentMode: true
+  localPort: 8081
+  enableHeaderResolution: true
+  tenantHeader: X-Tenant-ID
+  schemaPrefix: tenant_
+  defaultTenant: acmecorp
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+  packages-to-scan: com.salesflow.auth.controller
+  paths-to-match: /api/**
+
+logging:
+  level:
+    com.salesflow.auth: DEBUG
+    com.salesflow.auth.tenant: DEBUG
+    com.salesflow.auth.filter: DEBUG
+    com.salesflow.auth.config: DEBUG

@@ -36,8 +36,8 @@ public class TenantFilter extends OncePerRequestFilter {
         "/api/auth/register",
         "/api/public",
         "/actuator",
-        "/v3/api-docs",
-        "/swagger-ui"
+        "/v3/api-docs"
+        // Removed swagger-ui to ensure tenant resolution happens for Swagger UI
     );
 
     @Override
